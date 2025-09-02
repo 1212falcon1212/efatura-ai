@@ -19,8 +19,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login to GHCR
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+      - name: Login to GHCR (use GHCR_TOKEN if set, else GITHUB_TOKEN)
+        env:
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          USERNAME="$GHCR_USERNAME"
+          TOKEN="$GHCR_TOKEN"
+          if [ -z "$USERNAME" ] || [ -z "$TOKEN" ]; then
+            echo "GHCR secrets not set. Falling back to GITHUB_TOKEN"
+            USERNAME="$ACTOR"
+            TOKEN="$GITHUB_TOKEN"
+          fi
+          echo "$TOKEN" | docker login ghcr.io -u "$USERNAME" --password-stdin
 
       - name: Build & Push backend image
         run: |
