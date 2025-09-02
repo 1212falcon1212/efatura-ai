@@ -2,7 +2,7 @@
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --ignore-platform-req=ext-pcntl
 COPY . .
 RUN composer dump-autoload -o
 
@@ -10,7 +10,7 @@ RUN composer dump-autoload -o
 FROM php:8.2-fpm-alpine
 
 RUN apk add --no-cache bash curl git icu-dev libzip-dev oniguruma-dev libxml2-dev \
-  && docker-php-ext-install pdo_mysql intl zip soap \
+  && docker-php-ext-install pdo_mysql intl zip soap pcntl \
   && rm -rf /var/cache/apk/*
 
 WORKDIR /var/www/html
