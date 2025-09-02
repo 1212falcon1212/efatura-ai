@@ -3,12 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
-    css: true,
-    globals: true,
-  },
+  // Vitest ayarlarını prod build dışında tutmak için kaldırıyoruz
   server: {
     proxy: {
       '/api': {
