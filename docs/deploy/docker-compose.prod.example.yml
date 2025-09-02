@@ -1,0 +1,60 @@
+version: "3.9"
+services:
+  web:
+    image: ghcr.io/1212falcon1212/efatura-ai/frontend:prod
+
+    container_name: efatura_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_BASE=/api
+    depends_on:
+      - php
+    # Basit Nginx conf'u image içinde varsayılmış olmalı
+
+  php:
+    image: ghcr.io/1212falcon1212/efatura-ai/backend:prod
+
+    container_name: efatura_php
+    restart: unless-stopped
+    env_file:
+      - ./backend.env
+    volumes:
+      - ef_storage:/var/www/html/storage
+      - ef_bootstrap:/var/www/html/bootstrap/cache
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: mysql:8.0
+    container_name: efatura_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: efatura
+      MYSQL_USER: efatura
+      MYSQL_PASSWORD: strongpassword
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - ef_db:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: efatura_redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    volumes:
+      - ef_redis:/data
+
+volumes:
+  ef_db: {}
+  ef_storage: {}
+  ef_bootstrap: {}
+  ef_redis: {}
+
+# Notlar:
+# 1) OWNER/REPO'yu GitHub kullanıcı/repo isminle değiştir.
+# 2) backend.env dosyasını aynı klasöre oluştur ve Laravel .env değerlerini doldur.
+# 3) 80/443 ters proxy/SSL gerekiyorsa burada veya üstte Traefik/Nginx ile ekle.
+

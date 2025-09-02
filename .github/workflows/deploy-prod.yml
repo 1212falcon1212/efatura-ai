@@ -1,0 +1,63 @@
+name: Deploy Prod
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+
+      - name: Build & Push backend image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/backend:prod ./backend/efatura-backend
+          docker push ghcr.io/${{ github.repository }}/backend:prod
+
+      - name: Build & Push frontend image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/frontend:prod ./frontend
+          docker push ghcr.io/${{ github.repository }}/frontend:prod
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          passphrase: ${{ secrets.PROD_SSH_PASSPHRASE }}
+          script: |
+            set -e
+            mkdir -p "${{ secrets.PROD_SSH_PATH }}"
+            cd "${{ secrets.PROD_SSH_PATH }}"
+            if [ ! -f docker-compose.yml ]; then
+              echo "docker-compose.yml eksik. Lütfen repodaki docs/deploy/docker-compose.prod.example.yml dosyasını sunucuya kopyalayıp docker-compose.yml olarak düzenleyin." >&2
+              exit 1
+            fi
+            docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" -p "${{ secrets.GHCR_TOKEN }}"
+            docker compose pull
+            docker compose up -d
+            # Migrations (varsa php servisi)
+            if docker compose ps php >/dev/null 2>&1; then
+              docker compose exec -T php php artisan migrate --force || true
+            fi
+            docker system prune -f
+
+
