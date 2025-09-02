@@ -1,0 +1,11 @@
+{
+  "name": "efatura-ai",
+  "private": true,
+  "scripts": {
+    "sdk:gen": "openapi-generator-cli generate -i backend/efatura-backend/api/openapi.yaml -g typescript-axios -o sdks/typescript --additional-properties=supportsES6=true,withSeparateModelsAndApi=true && openapi-generator-cli generate -i backend/efatura-backend/api/openapi.yaml -g php -o sdks/php && openapi-generator-cli generate -i backend/efatura-backend/api/openapi.yaml -g python -o sdks/python"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.12.1"
+  }
+}
+

@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install generator
+        run: npm ci
+      - name: Generate SDKs
+        run: npm run sdk:gen
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, pdo, pdo_mysql, dom
+      - name: Backend composer install
+        run: |
+          cd backend/efatura-backend
+          composer install --no-interaction --no-progress --prefer-dist
+      - name: Backend tests
+        env:
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: :memory:
+        run: |
+          cd backend/efatura-backend
+          php artisan test --testsuite=Feature --stop-on-failure
+      - name: Frontend Lint & Test & Build
+        run: |
+          cd frontend
+          if [ -f package.json ]; then npm ci; npm run -s lint; npm run -s test -- --coverage; npm run -s build; fi
+

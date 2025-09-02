@@ -1,0 +1,20 @@
+{
+  "name": "efatura.ai — Tek API ile E‑Belge Entegrasyonu",
+  "short_name": "efatura.ai",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0ea5e9",
+  "description": "E‑Fatura, E‑Arşiv, E‑Makbuz ve E‑İrsaliye için tek API ve profesyonel panel.",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
+
+

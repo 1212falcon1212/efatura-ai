@@ -1,0 +1,133 @@
+{
+  "info": {
+    "name": "efatura.ai API v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Invoices",
+      "item": [
+        {
+          "name": "Create Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "X-Api-Key", "value": "{{api_key}}"},
+              {"key": "X-Idempotency-Key", "value": "{{idempotency_key}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/invoices",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "invoices"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer\": { \"name\": \"ACME A.Ş.\", \"vkn\": \"1234567890\" },\n  \"items\": [ { \"name\": \"Ürün A\", \"quantity\": 1, \"unitPrice\": { \"amount\": 100, \"currency\": \"TRY\" }, \"vatRate\": 20 } ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Invoice",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "X-Api-Key", "value": "{{api_key}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/invoices/{{invoice_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "invoices", "{{invoice_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Credits",
+      "item": [
+        {
+          "name": "Get Credit Wallet",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "X-Api-Key", "value": "{{api_key}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/credits/wallet",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "credits", "wallet"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Internal / Providers / Kolaysoft",
+      "item": [
+        {"name":"last-invoice","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/last-invoice","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","last-invoice"]}}},
+        {"name":"credit-count","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/credit-count","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","credit-count"]}}},
+        {"name":"is-efatura-user","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/is-efatura-user?vknTckn=1234567890","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","is-efatura-user"],"query":[{"key":"vknTckn","value":"1234567890"}]}}},
+        {"name":"control-xml","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/control-xml","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","control-xml"]},"body":{"mode":"raw","raw":"{\n  \"xml\": \"<Invoice></Invoice>\"\n}"}}},
+        {"name":"send-invoice","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/send-invoice","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","send-invoice"]},"body":{"mode":"raw","raw":"{\n  \"xml\": \"<Invoice></Invoice>\",\n  \"documentUUID\": \"11111111-1111-1111-1111-111111111111\"\n}"}}},
+        {"name":"cancel","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/cancel","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","cancel"]},"body":{"mode":"raw","raw":"{\n  \"invoiceUuid\": \"11111111-1111-1111-1111-111111111111\",\n  \"cancelReason\": \"test\",\n  \"cancelDate\": \"2025-08-08\"\n}"}}},
+        {"name":"update-invoice","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/update-invoice","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","update-invoice"]},"body":{"mode":"raw","raw":"{\n  \"inputDocumentList\": [{\n    \"documentUUID\": \"111\",\n    \"xml\": \"<Invoice></Invoice>\"\n  }]\n}"}}},
+        {"name":"set-email-sent","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/set-email-sent","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","set-email-sent"]},"body":{"mode":"raw","raw":"{\n  \"invoiceUuid\": \"111\",\n  \"email\": \"a@b.com\"\n}"}}},
+        {"name":"credit-space","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/credit-space","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","credit-space"]}}},
+        {"name":"query-with-document-date","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/query-with-document-date?documentDate=2025-08-01","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","query-with-document-date"],"query":[{"key":"documentDate","value":"2025-08-01"}]}}},
+        {"name":"query-with-received-date","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/query-with-received-date?receivedDate=2025-08-02","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","query-with-received-date"],"query":[{"key":"receivedDate","value":"2025-08-02"}]}}},
+        {"name":"query-with-guid-list","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/query-with-guid-list","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","query-with-guid-list"]},"body":{"mode":"raw","raw":"{\n  \"documentUUIDList\": [\"u1\", \"u2\"]\n}"}}},
+        {"name":"credit-actions","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/credit-actions","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","credit-actions"]}}},
+        {"name":"archived/query","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/archived/query","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","archived","query"]}}},
+        {"name":"archived/query-with-document-date","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/archived/query-with-document-date?documentDate=2025-08-01","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","archived","query-with-document-date"],"query":[{"key":"documentDate","value":"2025-08-01"}]}}}
+        ,
+        {"name":"voucher/send-smm","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/send-smm","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","send-smm"]},"body":{"mode":"raw","raw":"{\n  \"voucherXMLList\": [{ \"documentUUID\": \"...\", \"xml\": \"<eArsivVeri/>\", \"destinationEmail\": \"mail@ex.com\" }]\n}"}}},
+        {"name":"voucher/send-mm","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/send-mm","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","send-mm"]},"body":{"mode":"raw","raw":"{\n  \"voucherXMLList\": [{ \"documentUUID\": \"...\", \"xml\": \"<MM/>\", \"destinationEmail\": \"mail@ex.com\" }]\n}"}}},
+        {"name":"voucher/update-smm","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/update-smm","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","update-smm"]},"body":{"mode":"raw","raw":"{\n  \"voucherXMLList\": [{ \"documentUUID\": \"...\", \"xml\": \"<eArsivVeri/>\" }]\n}"}}},
+        {"name":"voucher/update-mm","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/update-mm","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","update-mm"]},"body":{"mode":"raw","raw":"{\n  \"voucherXMLList\": [{ \"documentUUID\": \"...\", \"xml\": \"<MM/>\" }]\n}"}}},
+        {"name":"voucher/cancel-smm","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/cancel-smm","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","cancel-smm"]},"body":{"mode":"raw","raw":"{\n  \"voucherUuid\": \"...\", \"cancelReason\": \"...\", \"cancelDate\": \"2025-08-08\"\n}"}}},
+        {"name":"voucher/cancel-mm","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/cancel-mm","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","cancel-mm"]},"body":{"mode":"raw","raw":"{\n  \"voucherUuid\": \"...\", \"cancelReason\": \"...\", \"cancelDate\": \"2025-08-08\"\n}"}}},
+        {"name":"voucher/last-smm","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/last-smm","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","last-smm"]}}},
+        {"name":"voucher/last-mm","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/last-mm","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","last-mm"]}}},
+        {"name":"voucher/query","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/query?paramType=Document_UUID&parameter=...&voucherType=SERBESTMESLEKMAKBUZU&withXML=NONE","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","query"],"query":[{"key":"paramType","value":"Document_UUID"},{"key":"parameter","value":"..."},{"key":"voucherType","value":"SERBESTMESLEKMAKBUZU"},{"key":"withXML","value":"NONE"}]}}},
+        {"name":"voucher/query-with-local-id","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/query-with-local-id?localId=...","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","query-with-local-id"],"query":[{"key":"localId","value":"..."}]}}},
+        {"name":"voucher/query-with-document-date","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/query-with-document-date?startDate=2025-08-01&endDate=2025-08-31&voucherType=SERBESTMESLEKMAKBUZU&withXML=NONE","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","query-with-document-date"],"query":[{"key":"startDate","value":"2025-08-01"},{"key":"endDate","value":"2025-08-31"},{"key":"voucherType","value":"SERBESTMESLEKMAKBUZU"},{"key":"withXML","value":"NONE"}]}}},
+        {"name":"voucher/query-with-received-date","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/query-with-received-date?startDate=2025-08-01&endDate=2025-08-31&voucherType=MUSTAHSILMAKBUZU&withXML=NONE","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","query-with-received-date"],"query":[{"key":"startDate","value":"2025-08-01"},{"key":"endDate","value":"2025-08-31"},{"key":"voucherType","value":"MUSTAHSILMAKBUZU"},{"key":"withXML","value":"NONE"}]}}},
+        {"name":"voucher/query-with-guid-list","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/query-with-guid-list","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","query-with-guid-list"]},"body":{"mode":"raw","raw":"{\n  \"guidList\": [\"...\", \"...\"],\n  \"voucherType\": \"SERBESTMESLEKMAKBUZU\"\n}"}}},
+        {"name":"voucher/set-smm-email-sent","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/set-smm-email-sent","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","set-smm-email-sent"]},"body":{"mode":"raw","raw":"{\n  \"voucher_uuid_list\": [\"...\"]\n}"}}},
+        {"name":"voucher/set-mm-email-sent","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/set-mm-email-sent","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","set-mm-email-sent"]},"body":{"mode":"raw","raw":"{\n  \"voucher_uuid_list\": [\"...\"]\n}"}}},
+        {"name":"voucher/set-smm-document-flag","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/set-smm-document-flag","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","set-smm-document-flag"]},"body":{"mode":"raw","raw":"{\n  \"flagSetter\": { \"document_uuid\": \"...\", \"flag_name\": \"OKUNDU\", \"flag_value\": 1 }\n}"}}},
+        {"name":"voucher/set-mm-document-flag","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/set-mm-document-flag","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","set-mm-document-flag"]},"body":{"mode":"raw","raw":"{\n  \"flagSetter\": { \"document_uuid\": \"...\", \"flag_name\": \"OKUNDU\", \"flag_value\": 1 }\n}"}}},
+        {"name":"voucher/control-xml-smm","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/control-xml-smm","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","control-xml-smm"]},"body":{"mode":"raw","raw":"{\n  \"xml\": \"<eArsivVeri/>\"\n}"}}},
+        {"name":"voucher/control-xml-mm","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/voucher/control-xml-mm","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","voucher","control-xml-mm"]},"body":{"mode":"raw","raw":"{\n  \"xml\": \"<MM/>\"\n}"}}},
+        {"name":"despatch/send","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/send","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","send"]},"body":{"mode":"raw","raw":"{\n  \"inputDocumentList\": [{ \"documentUUID\": \"...\", \"xml\": \"<DespatchAdvice/>\" }]\n}"}}},
+        {"name":"despatch/send-receipt-advice","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/send-receipt-advice","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","send-receipt-advice"]},"body":{"mode":"raw","raw":"{\n  \"inputDocumentList\": [{ \"documentUUID\": \"...\", \"xml\": \"<ReceiptAdvice/>\" }]\n}"}}},
+        {"name":"despatch/control-xml","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/control-xml","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","control-xml"]},"body":{"mode":"raw","raw":"{\n  \"xml\": \"<DespatchAdvice/>\"\n}"}}},
+        {"name":"despatch/control-receipt-xml","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/control-receipt-xml","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","control-receipt-xml"]},"body":{"mode":"raw","raw":"{\n  \"xml\": \"<ReceiptAdvice/>\"\n}"}}},
+        {"name":"despatch/update","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/update","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","update"]},"body":{"mode":"raw","raw":"{\n  \"inputDocumentList\": [{ \"documentUUID\": \"...\", \"xml\": \"<DespatchAdvice/>\" }]\n}"}}},
+        {"name":"despatch/gb-list","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/gb-list","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","gb-list"]}}},
+        {"name":"despatch/pk-list","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/pk-list","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","pk-list"]}}},
+        {"name":"despatch/query-users","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/query-users","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","query-users"]}}},
+        {"name":"despatch/last-id-and-date","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/last-id-and-date","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","last-id-and-date"]}}},
+        {"name":"despatch/outbox","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/outbox?paramType=Document_UUID&parameter=...&withXML=NONE","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","outbox"],"query":[{"key":"paramType","value":"Document_UUID"},{"key":"parameter","value":"..."},{"key":"withXML","value":"NONE"}]}}},
+        {"name":"despatch/outbox-with-document-date","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/outbox-with-document-date?startDate=2025-08-01&endDate=2025-08-31&documentType=1&queried=ALL&withXML=NONE","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","outbox-with-document-date"],"query":[{"key":"startDate","value":"2025-08-01"},{"key":"endDate","value":"2025-08-31"},{"key":"documentType","value":"1"},{"key":"queried","value":"ALL"},{"key":"withXML","value":"NONE"}]}}},
+        {"name":"despatch/outbox-with-received-date","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/outbox-with-received-date?startDate=2025-08-01&endDate=2025-08-31&documentType=1&queried=ALL&withXML=NONE","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","outbox-with-received-date"],"query":[{"key":"startDate","value":"2025-08-01"},{"key":"endDate","value":"2025-08-31"},{"key":"documentType","value":"1"},{"key":"queried","value":"ALL"},{"key":"withXML","value":"NONE"}]}}},
+        {"name":"despatch/outbox-with-local-id","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/outbox-with-local-id?localId=...","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","outbox-with-local-id"],"query":[{"key":"localId","value":"..."}]}}},
+        {"name":"despatch/outbox-with-guid-list","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/outbox-with-guid-list","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","outbox-with-guid-list"]},"body":{"mode":"raw","raw":"{\n  \"guidList\": [\"...\", \"...\"],\n  \"documentType\": \"1\"\n}"}}},
+        {"name":"despatch/inbox","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/inbox?paramType=Document_UUID&parameter=...&withXML=NONE","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","inbox"],"query":[{"key":"paramType","value":"Document_UUID"},{"key":"parameter","value":"..."},{"key":"withXML","value":"NONE"}]}}},
+        {"name":"despatch/inbox-with-document-date","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/inbox-with-document-date?startDate=2025-08-01&endDate=2025-08-31&documentType=1&queried=ALL&withXML=NONE&takenFromEntegrator=ALL","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","inbox-with-document-date"],"query":[{"key":"startDate","value":"2025-08-01"},{"key":"endDate","value":"2025-08-31"},{"key":"documentType","value":"1"},{"key":"queried","value":"ALL"},{"key":"withXML","value":"NONE"},{"key":"takenFromEntegrator","value":"ALL"}]}}},
+        {"name":"despatch/inbox-with-received-date","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/inbox-with-received-date?startDate=2025-08-01&endDate=2025-08-31&documentType=1&queried=ALL&withXML=NONE&takenFromEntegrator=ALL","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","inbox-with-received-date"],"query":[{"key":"startDate","value":"2025-08-01"},{"key":"endDate","value":"2025-08-31"},{"key":"documentType","value":"1"},{"key":"queried","value":"ALL"},{"key":"withXML","value":"NONE"},{"key":"takenFromEntegrator","value":"ALL"}]}}},
+        {"name":"despatch/inbox-with-guid-list","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/inbox-with-guid-list","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","inbox-with-guid-list"]},"body":{"mode":"raw","raw":"{\n  \"guidList\": [\"...\", \"...\"],\n  \"documentType\": \"1\"\n}"}}},
+        {"name":"despatch/set-taken-from-entegrator","request":{"method":"POST","header":[{"key":"X-Api-Key","value":"{{api_key}}"},{"key":"Content-Type","value":"application/json"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/set-taken-from-entegrator","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","set-taken-from-entegrator"]},"body":{"mode":"raw","raw":"{\n  \"documentUuid\": [\"...\"]\n}"}}},
+        {"name":"despatch/envelope","request":{"method":"GET","header":[{"key":"X-Api-Key","value":"{{api_key}}"}],"url":{"raw":"{{base_url}}/v1/internal/providers/kolaysoft/despatch/envelope?envelopeUUID=...","host":["{{base_url}}"],"path":["v1","internal","providers","kolaysoft","despatch","envelope"],"query":[{"key":"envelopeUUID","value":"..."}]}}}
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "base_url", "value": "https://sandbox.api.efatura.ai"},
+    {"key": "api_key", "value": "test_..."},
+    {"key": "idempotency_key", "value": "{{$randomUUID}}"},
+    {"key": "invoice_id", "value": "1"}
+  ]
+}
+

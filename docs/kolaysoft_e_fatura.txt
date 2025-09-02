@@ -1,0 +1,2510 @@
+Entegrasyon Servisleri
+     Dokümanı
+
+
+
+
+   E-Fatura Servisi
+                                                                          E-Fatura Servisi
+                                                                               
+
+İçindekiler
+Yapılan Değişiklikler ...............................................................................................................................................3
+E-Fatura Servisi ........................................................................................................................................................4
+   1.      SendInvoice ....................................................................................................................................................4
+   2.      SendApplicationResponse .....................................................................................................................5
+   3.      GetCustomerCreditCount ...............................................................................................................................6
+   4.      GetCustomerCreditSpace ...............................................................................................................................7
+   5.      ControlInvoiceXML .........................................................................................................................................7
+   6.      ControlApplicationResponseXML ...................................................................................................................8
+   7.      GetCustomerGBList ........................................................................................................................................9
+   8.      GetCustomerPKList .........................................................................................................................................9
+   9.      UpdateInvoice ............................................................................................................................................. 10
+   10. GetOutboxInvoiceStatusWithLogs .............................................................................................................. 10
+   11. setDocumentFlag ........................................................................................................................................ 11
+   12. cancelInvoice ............................................................................................................................................... 12
+E-Fatura Sorgulama Servisi ...................................................................................................................................... 13
+   1. QueryUsers ...................................................................................................................................................... 13
+   2. GetLastInvoiceIdAndDate ................................................................................................................................ 15
+   3. QueryOutboxDocument .................................................................................................................................. 16
+   4. QueryOutboxDocumentWithDocumentDate .................................................................................................. 17
+   5. QueryOutboxDocumentWithReceivedDate .................................................................................................... 19
+   6. QueryOutboxDocumentWithLocalId ............................................................................................................... 21
+   7. QueryOutboxDocumentsWithGUIDList ........................................................................................................... 22
+   8. QueryInboxDocument ..................................................................................................................................... 23
+   9. QueryInboxDocumentWithDocumentDate..................................................................................................... 25
+   10. QueryInboxDocumentWithReceivedDate ..................................................................................................... 27
+   11. QueryInboxDocumentsWithGUIDList ............................................................................................................ 30
+   12. SetTakenFromEntegrator .............................................................................................................................. 31
+   13. QueryAppResponseOfOutboxDocument ...................................................................................................... 31
+   14. QueryAppResponseOfInboxDocument ......................................................................................................... 33
+   15. QueryEnvelope .............................................................................................................................................. 34
+
+
+
+                                                                                    1
+                                                                         E-Fatura Servisi
+                                                                              
+
+   16. QueryArchivedOutboxDocument .................................................................................................................. 34
+   17. QueryArchivedInboxDocument ..................................................................................................................... 36
+E-Fatura Yükleme Servisi ................................................................................................................................... 38
+   1.      LoadOutboxInvoice...................................................................................................................................... 38
+   2. LoadInboxInvoice ............................................................................................................................................ 39
+   3.      QueryOutboxDocument ...................................................................................................................... 40
+   4.      QueryInboxDocument .......................................................................................................................... 41
+Sınıf tanımlamaları................................................................................................................................................... 42
+Hata Kodları ve Açıklamaları .................................................................................................................................... 48
+Http Başlığı ekleme ve yetkilendirme örneği........................................................................................................... 49
+
+
+
+
+                                                                                   2
+                                       E-Fatura Servisi
+                                            
+
+
+
+
+Yapılan Değişiklikler
+Tarih         Değişiklik
+
+08.05.2019    QueryInvoiceWS servisine QueryArchivedInboxDocument metodu eklendi.
+
+              QueryInvoiceWS servisine QueryArchivedOutboxDocument metodu eklendi.
+
+23.11.2018    LoadInvoiceWS servisi eklendi.
+
+05.01.2018    InvoiceWS servisindeki InputDocument sınıfına documentDate alanı eklendi.
+
+              InvoiceWS servisindeki InputDocument sınıfına documentId alanı eklendi.
+
+25.10.2017    QueryInvoiceWS servisine QueryInboxDocumentsWithWithGUIDList metodu eklendi.
+
+              QueryInvoiceWS servisine QueryOutboxDocumentsWithWithGUIDList metodu eklendi.
+
+01.07.2017    InvoiceWS servisindeki ResponseDocument sınıfına gtb_reference_no alanı eklendi.
+
+              InvoiceWS servisindeki ResponseDocument sınıfına gtb_gcb_tescil_no alanı eklendi.
+
+              InvoiceWS servisindeki ResponseDocument sınıfına gtb_fiili_ihracat_tarihi alanı
+              eklendi.
+
+24.05.2017    QueryInvoiceWS servisine QueryAppResponseOfOutboxDocument metodu eklendi.
+
+              QueryInvoiceWS servisine QueryAppResponseOfInboxDocument metodu eklendi.
+
+12.05.2017    InvoiceWS servisine updateInvoice metodu eklendi.
+
+              InvoiceWS servisindeki InputDocument sınıfına localId alanı eklendi.
+
+              QueryInvoiceWS servisindeki ResponseDocument sınıfına response_received_date
+              alanı eklendi.
+
+              InvoiceWS servisine getCustomerCreditCount metodu eklendi.
+
+              InvoiceWS servisine getCustomerCreditCount metodu eklendi.
+
+
+
+
+                                               3
+                                                E-Fatura Servisi
+                                                     
+
+                      InvoiceWS servisine controlInvoiceXML metodu eklendi.
+
+                      InvoiceWS servisine controlIApplicationResponseXML metodu eklendi.
+
+                      QueryInvoiceWS servisine QueryOutboxWithLocalId metodu eklendi.
+
+                      InvoiceWS servisinden getCustomerCredit metodu kaldırıldı.
+
+Not: Yeni eklenen metot ve alanlar yeşil, kaldırılan ve kullanılmayan alanlar gri renkte gösterilmiştir. Gri
+renkli alan, metot ve sınıflar dokumanın bir sonraki sürümünde yer almayacaktır.
+
+
+
+
+E-Fatura Servisi
+Servis Adı                 InvoiceWS
+
+Endpoint Adresi            https://servis.kolayentegrasyon.net/InvoiceService/InvoiceWS
+
+WSDL Adresi                https://servis.kolayentegrasyon.net/InvoiceService/InvoiceWS?wsdl
+
+Açıklama                   Mükellef tarafından oluşturulan UBL xml formatındaki fatura ve
+                           uygulama yanıtlarının entegratöre iletildiği servistir. Metot açıklamaları
+                           aşağıda yer almaktadır.
+
+
+
+  1. SendInvoice
+
+Metot Adı             sendInvoice
+
+Açıklama              UBL xml formatında oluşturulan faturaların entegratöre
+                      gönderildiği metottur.
+
+Parametreler
+
+                                       Tipi                                     Adı
+
+                      InputDocument türünden liste             inputDocumentList
+
+Dönüş değeri          EntResponse nesnesi türünde bir liste döndürür. Gönderilen
+                      inputDocumentList parametresinin içerdiği faturalar önce şema
+                      kontrolünden geçirilir. Başarılı faturalar sisteme kaydedilir.
+                      Gönderilen her bir faturaya ait ‘document_uuid (ETTN numarası)’
+
+
+
+                                                       4
+                                          E-Fatura Servisi
+                                               
+
+                   ve işlem sonucuna ait ‘code (kod)’, ‘explanation (açıklama)’,
+                   işlem başarısız ise ‘cause (sebep)’ alanları EntResponse nesnesi
+                   olarak oluşturulur ve mettotan döndürülecek listeye eklenir.
+
+
+
+
+Parametre Adı      inputDocumentList
+
+Parametre Tipi     InputDocument nesnesi türünden liste
+
+Açıklama
+
+Gönderilecek faturanın documentUUID’sini, xml içeriğini, kaynak ve hedef adres
+etiketlerini taşır. Nesne yapısı ve özellikleri dökümanın sonundaki Sınıf Tanımlamaları
+bölümünde açıklanmıştır.
+
+
+
+
+  2. SendApplicationResponse
+
+Metot Adı          sendApplicationResponse
+
+Açıklama           UBL xml formatındaki uygulama yanıtlarının (kabul, ret, iade)
+                   entegratöre gönderildiği metottur.
+
+Parametreler
+
+                                  Tipi                               Adı
+
+                   InputDocument türünden liste         inputDocumentList
+
+Dönüş değeri       EntResponse nesnesi türünde bir liste döndürür. Gönderilen
+                   inputDocumentList parametresinin içerdiği uygulama yanıtları
+                   önce şema kontrolünden geçirilir. Başarılı dokumanlar sisteme
+                   kaydedilir. Gönderilen her bir uygulama yanıtına ait
+                   ‘document_uuid (ETTN numarası)’ ve işlem sonucuna ait ‘code
+                   (kod)’, ‘explanation (açıklama)’, işlem başarısız ise ‘cause
+                   (sebep)’ alanları EntResponse nesnesi olarak oluşturulur ve
+                   mettotan döndürülecek listeye eklenir.
+
+
+
+
+                                                 5
+                                          E-Fatura Servisi
+                                               
+
+Parametre Adı      inputDocumentList
+
+Parametre Tipi     InputDocument nesnesi türünden liste
+
+Açıklama
+
+Gönderilecek uygulama yanıtının documentUUID’sini, xml içeriğini, kaynak ve
+hedef adres etiketlerini taşır. Nesne yapısı ve özellikleri dökümanın sonundaki Sınıf
+Tanımlamaları bölümünde açıklanmıştır.
+
+
+
+  3. GetCustomerCreditCount
+
+Metot Adı          getCustomerCreditCount
+
+Açıklama           VKN/TCKN bilgisi verilen mükellefin Fatura Adedi bilgisini almayı
+                   sağlar. Bu bilgi mükellefin şimdiye kadar yüklediği toplam ve an
+                   itibariyle kalan E-Fatura ve E-Arşiv fatura adedidir.
+
+Parametreler
+
+                                  Tipi                               Adı
+
+                                 String                           vkn_tckn
+
+Dönüş değeri       CreditInfo nesnesi döndürür. Ayrıntılı bilgi dokümantasyon
+                   sonundaki Sınıf Tanımlamaları bölümünde bulunabilir.
+
+
+
+
+Parametre Adı      vkn_tckn
+
+Parametre Tipi     String
+
+Açıklama
+
+Fatura Adedi bilgisi sorgulanacak mükellefin VKN/TCKN bilgisini tutar.
+
+
+
+
+                                                 6
+                                         E-Fatura Servisi
+                                              
+
+
+
+
+  4. GetCustomerCreditSpace
+
+Metot Adı          getCustomerCreditSpace
+
+Açıklama           VKN/TCKN bilgisi verilen mükellefin Alan Boyutu bilgisini almayı
+                   sağlar. Bu bilgi mükellefin şimdiye kadar yüklediği toplam ve an
+                   itibariyle kalan E-Defter, E-Defter Saklama alanı boyutunun MB
+                   (megabayt) cinsinden ifadesidir.
+
+Parametreler
+
+                                 Tipi                                Adı
+
+                                String                            vkn_tckn
+
+Dönüş değeri       CreditInfo sınıfı döndürür. Ayrıntılı bilgi dokümantasyon
+                   sonundaki Sınıf Tanımlamaları bölümünde bulunabilir.
+
+
+
+Parametre Adı      vkn_tckn
+
+Parametre Tipi     String
+
+Açıklama
+
+Alan Boyutu bilgisi sorgulanacak mükellefin VKN/TCKN bilgisini tutar.
+
+
+
+  5. ControlInvoiceXML
+
+Metot Adı          controlInvoiceXML
+
+Açıklama           Verilen UBL xml formatındaki fatura dokümanını şema ve
+                   şematron kontrollerinden geçirir.
+
+Parametreler
+
+                                 Tipi                                Adı
+
+
+
+
+                                                7
+                                         E-Fatura Servisi
+                                              
+
+                                String                            invoiceXML
+
+Dönüş değeri       EntResponse nesnesi döndürür. Sınıf hakkında detaylı bilgi
+                   dokümantasyon sonundaki Sınıf Tanımlamaları bölümünde
+                   bulunabilir.
+
+
+
+Parametre Adı      invoiceXML
+
+Parametre Tipi     String
+
+Açıklama
+
+Kontrolden geçirilecek olan faturanın UBL xml formatındaki içeriğini tutar.
+
+
+
+  6. ControlApplicationResponseXML
+
+Metot Adı          controlApplicationResponseXML
+
+Açıklama           Verilen UBL xml formatındaki uygulama yanıtı dokümanını şema
+                   ve şematron kontrollerinden geçirir.
+
+Parametreler
+
+                                 Tipi                                Adı
+
+                                String                      applicationResponseXML
+
+Dönüş değeri       EntResponse nesnesi döndürür. Sınıf hakkında detaylı bilgi
+                   dokümantasyon sonundaki Sınıf Tanımlamaları bölümünde
+                   bulunabilir.
+
+
+
+Parametre Adı      applicationResponseXML
+
+Parametre Tipi     String
+
+Açıklama
+
+Kontrolden geçirilecek olan uygulama yanıtının UBL xml formatındaki içeriğini tutar.
+
+
+
+
+                                                8
+                                      E-Fatura Servisi
+                                           
+
+
+
+
+ 7. GetCustomerGBList
+
+Metot Adı      getCustomerGBList
+
+Açıklama       İsteği gönderen kullanıcıya ait Gönderici Birim etiketleri listesini
+               döndürür. Kullanıcı bilgileri metoda sağlanacak HTTP Başlığı
+               içerisinde yer almaktadır. HTTP Başlığı’nın nasıl ekleneceği
+               hakkında bilgi almak için dokuman sonundaki HTTP Başlığı
+               Ekleme bölümüne başvurunuz.
+
+Parametreler
+
+                               Bu metot parametre almamaktadır.
+
+Dönüş değeri   UserQueryResponse nesnesi döndürür. Sınıf hakkında detaylı bilgi
+               dokümantasyon sonundaki Sınıf Tanımlamaları bölümünde
+               bulunabilir.
+
+
+
+ 8. GetCustomerPKList
+
+Metot Adı      getCustomerPKList
+
+Açıklama       İsteği gönderen kullanıcıya ait Posta Kutusu etiketleri listesini
+               döndürür. Kullanıcı bilgileri metoda sağlanacak HTTP Başlığı
+               içerisinde yer almaktadır. HTTP Başlığı’nın nasıl ekleneceği
+               hakkında bilgi almak için dokuman sonundaki HTTP Başlığı
+               Ekleme bölümüne başvurunuz.
+
+Parametreler
+
+                               Bu metot parametre almamaktadır.
+
+Dönüş değeri   UserQueryResponse nesnesi döndürür. Sınıf hakkında detaylı bilgi
+               dokümantasyon sonundaki Sınıf Tanımlamaları bölümünde
+               bulunabilir.
+
+
+
+
+                                             9
+                                         E-Fatura Servisi
+                                              
+
+
+
+
+  9. UpdateInvoice
+
+Metot Adı          updateInvoice
+
+Açıklama           İşlenme esnasında hata oluşan faturaların düzenlendikten sonra
+                   tekrar yüklenebilmesini sağlayan metottur. Hatalı olmayan fatura
+                   güncellenemez. Yani bu metoda gönderilen InputDocument
+                   içindeki documentID’nin sistemde var olması ve durumunun
+                   hatalı olması gerekmektedir. Aksi takdirde güncellenecek fatura
+                   bulunamadı uyarısı verir.
+
+Parametreler
+
+                                 Tipi                              Adı
+
+                   InputDocument türünden liste        inputDocumentList
+
+Dönüş değeri       EntResponse nesnesi türünde bir liste döndürür. Gönderilen
+                   inputDocumentList parametresinin içerdiği faturalar önce şema
+                   kontrolünden geçirilir. Başarılı faturalar güncellenir. Gönderilen
+                   her bir faturaya ait ‘document_uuid (ETTN numarası)’ ve işlem
+                   sonucuna ait ‘code (kod)’, ‘explanation (açıklama)’, işlem
+                   başarısız ise ‘cause (sebep)’ alanları EntResponse nesnesi olarak
+                   oluşturulur ve metottan döndürülecek listeye eklenir.
+
+
+
+Parametre Adı      inputDocumentList
+
+Parametre Tipi     InputDocument nesnesi türünden liste
+
+Açıklama
+
+Güncellenecek faturanın documentUUID’sini, xml içeriğini, kaynak adres etiketi ve
+hedef e-posta bilgisini taşır. Nesne yapısı ve özellikleri dökümanın sonundaki Sınıf
+Tanımlamaları bölümünde açıklanmıştır.
+
+
+
+
+  10. GetOutboxInvoiceStatusWithLogs
+
+
+
+
+                                               10
+                                                 E-Fatura Servisi
+                                                      
+
+Metot Adı           GetOutboxInvoiceStatusWithLogs
+
+Açıklama            Doküman işlenme geçmişi liste şeklinde dönülür
+
+Parametreler
+
+                                    Tipi                                 Adı
+
+                                String listesi                      documentUuid
+
+Dönüş değeri        LogResponse tipinde nesne döndürülür. Sorgunun sonucu ve
+                    açıklaması bu sınıf içerisindeki queryState ve stateExplanation
+                    alanları ile kontrol edilebilir. Eğer sorgu sonucunda fatura işlenme
+                    logları bulunursa logCount alanı bulunan log sayısını gösterir.
+                    InvoiceLog listesi tipindeki invoiceLogs alanından ise her bir log
+                    ile ilgili detaylı bilgiye ulaşılabilir.
+
+
+
+Parametre Adı       documentUuid
+
+Parametre Tipi      String
+
+Açıklama
+
+Fatura işlenme log kayıtlarının döndürüleceği fatura ettn bilgisini içerir.
+
+
+
+  11. setDocumentFlag
+
+
+Metot Adı           setDocumentFlag
+
+Açıklama            Dokümana ait belli işaretlemelerin yapılmasını sağlayan
+                    metottur.
+
+Parametreler
+
+                                    Tipi                                 Adı
+
+                             FlagSetter nesnesi                       flagSetter
+
+Dönüş değeri        EntResponse nesnesi döndürür. İşlem sonucu bu nesneye ait
+                    ‘code (kod)’, ‘explanation (açıklama)’ alanlarında yer alır.
+
+
+
+
+                                                       11
+                                           E-Fatura Servisi
+                                                
+
+Parametre Adı       flagSetter
+
+Parametre Tipi      FlagSetter nesnesi
+
+Açıklama
+
+Doküman işaretleme bilgisini tutan sınıftır. Sınıf hakkında detaylı bilgi
+dokümantasyon sonundaki Sınıf Tanımlamaları bölümünde bulunabilir.
+
+
+
+  12. cancelInvoice
+
+
+Metot Adı           cancelInvoice
+
+Açıklama            Doküman entegratör tarafınan işleniyor durumundaki faturaların
+                    işlenmesini durdurmayı sağlayan metottur.
+
+Parametreler
+
+                                   Tipi                             Adı
+
+                                  String                       invoiceUUID
+
+Dönüş değeri        EntResponse nesnesi döndürür. İşlem sonucu bu nesneye ait
+                    ‘code (kod)’, ‘explanation (açıklama)’ alanlarında yer alır.
+
+
+
+Parametre Adı       invoiceUUID
+
+Parametre Tipi      String
+
+Açıklama
+
+İşlenişi durdurulmak istenen belgenin UUID bilgisini taşır.
+
+
+
+
+                                                 12
+                                          E-Fatura Servisi
+                                               
+
+E-Fatura Sorgulama Servisi
+Servis      QueryDocumentWS
+Adı
+
+Endpoint https://servis.kolayentegrasyon.net/QueryInvoiceService/QueryDocumentWS
+Adresi
+
+WSDL        https://servis.kolayentegrasyon.net/QueryInvoiceService/QueryDocument
+Adresi      WS?wsdl
+
+Açıklam     UBL xml yapısındaki Fatura ve/veya uygulama yanıtının entegratöre
+a           gönderilmesini sağlayan servistir.
+
+
+
+
+  1. QueryUsers
+
+Metot Adı         QueryUsers
+
+Açıklama          E-fatura mükellefi olarak GİB’e kayıtlı kullanıcı bilgilerini
+                  sorgulamada kullanılır.
+
+Parametreler
+
+                                 Tipi                                  Adı
+
+                                String                              startDate
+
+                                String                             finishDate
+
+                                String                              vkn_tckn
+
+Dönüş değeri      UserQueryResponse nesnesi döndürür. Sorgulama sonucu ve
+                  sonuç açıklaması ile beraber sorgu kriterlerine uyan kullanıcıları
+                  ResponseUser tipinde bir liste olarak döndürür.
+
+
+
+Parametre Adı     startDate
+
+Parametre Tipi    String
+
+Açıklama
+
+
+
+
+                                                13
+                                          E-Fatura Servisi
+                                               
+
+Sorgulama başlangıç tarihi. Kullanıcının GİB’e ilk kayıt edildiği veya kaydının
+güncellendiği tarihler üzerinde yapılacak sorgunun başlangıç sınırını belirtir. (yyyy-
+MM-dd) formatında String değeri alır. Boş bırakılması durumunda başlangıç tarihi
+sorguda dikkate alınmaz.
+
+
+
+Parametre Adı      finishDate
+
+Parametre Tipi     String
+
+Açıklama
+
+Sorgulama bitiş tarihi. Kullanıcının GİB’e ilk kayıt edildiği veya kaydının güncellendiği
+tarihler üzerinde yapılacak sorgunun bitiş sınırını belirtir. (yyyy-MM-dd) formatında
+String değeri alır. Boş bırakılması durumunda bitiş tarihi sorguda dikkate alınmaz.
+
+
+
+Parametre Adı      vkn_tckn
+
+Parametre Tipi     String
+
+Açıklama
+
+Sorgulanacak kullanıcının 10 haneli vergi kimlik numarası veya 11 haneli TC kimlik
+numarasını taşır.
+
+
+
+
+                                                14
+                                                 E-Fatura Servisi
+                                                      
+
+  2. GetLastInvoiceIdAndDate
+
+Metot Adı          GetLastInvoiceIdAndDate
+
+Açıklama           Mükellefin entegratöre gönderdiği faturalar arasından aynı ‘3
+                   haneli fatura serisi’ bilgisine sahip en yüksek numaralı faturanın
+                   düzenleme tarihi ve fatura no’sunu döndürür.
+
+Parametreler
+
+                                     Tipi                                 Adı
+
+                                    String                             source_id
+
+                                String listesi                      documentIdPrefix
+
+Dönüş değeri       ResponseDocument nesnesi döndürür. Bu nesne içerisinde yer
+                   alan document_id ve issue_date değerleri en yüksek numaralı
+                   faturanın ‘fatura no’ ve ‘düzenleme tarihi’ bilgisidir.
+
+
+
+Parametre Adı      source_id
+
+Parametre Tipi     String
+
+Açıklama
+
+Faturayı gönderecek mükellefin 10 haneli vergi kimlik numarası veya 11 haneli TC
+kimlik numarası.
+
+
+
+Parametre Adı      documentIdPrefix
+
+Parametre Tipi     String listesi
+
+Açıklama
+
+Faturaların üç haneli seri numaralarını içeren liste. Örnek: {“ABC”,”DEF”,”XYZ”}
+
+
+
+
+                                                       15
+                                         E-Fatura Servisi
+                                              
+
+3. QueryOutboxDocument
+
+Metot Adı         QueryOutboxDocument
+
+Açıklama          Gönderilen fatura ve uygulama yanıtlarının durumunu
+                  sorgulamak amacıyla kullanılır.
+
+Parametreler
+
+                                 Tipi                                Adı
+
+                                String                          paramType
+
+                                String                           parameter
+
+                                String                            withXML
+
+Dönüş değeri      DocumentQueryResponse nesnesi döndürür. Sorgunun sonucu
+                  ve açıklaması bu sınıf içerisindeki queryState ve stateExplanation
+                  alanları ile kontrol edilebilir. Eğer sorgu sonucunda dokuman(lar)
+                  bulunursa documentCount alanı bulunan dokuman sayısını
+                  gösterir. ResponseDocument listesi tipindeki documents
+                  alanından ise her bir dokuman ile ilgili detaylı bilgiye ulaşılabilir.
+
+
+
+Parametre Adı     paramType
+
+Parametre Tipi    String
+
+Açıklama
+
+Dokumanın sorgulanacağı parametre tipini tutar. Fatura UUID’si, Fatura Numarası
+veya Zarf UUID’si bilgilerinden herhangi birisi ile sorgulama yapılabilir.
+{“Document_UUID”,”Document_ID”,”Envelope_UUID”} değerlerinden birini alır.
+
+
+
+Parametre Adı     parameter
+
+Parametre Tipi    String
+
+Açıklama
+
+paramType ile belirtilen parametrenin değerini tutar.
+
+
+
+
+                                               16
+                                        E-Fatura Servisi
+                                             
+
+Parametre Adı     withXML
+
+Parametre Tipi    String
+
+Açıklama
+
+Sorgu sonucunda döndürülecekse dokumanın XML, PDF veya HTML içeriğinin
+istenilip istenilmediğin belirtildiği parametredir. {“XML”, “PDF”, “HTML”, ”NONE”}
+değerleri alır. “NONE” herhangi bir içerik döndürmez, diğer seçeneklerde ise
+içeriğin bayt değerine sorgu sonucunda dönen DocumentQueryResponse nesnesi
+içerisindeki documents listesinde yer alan ResponseDocument nesnelerindeki
+‘content’ alanından ulaşılabilir. Bu alanın “NONE” olmadığı durumlarda dönen
+dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+4. QueryOutboxDocumentWithDocumentDate
+
+Metot Adı         QueryOutboxDocumentWithDocumentDate
+
+Açıklama          Mükellefin giden kutusunda verilen tarih aralığında gönderilen
+                  fatura ve uygulama yanıtlarının durumunu fatura tarihine göre
+                  sorgulamak amacıyla kullanılır.
+
+Parametreler
+
+                                Tipi                             Adı
+
+                               String                         startDate
+
+                               String                         endDate
+
+                               String                      documentType
+
+                               String                          queried
+
+                               String                          withXML
+
+                               String                        minRecordId
+
+Dönüş değeri      DocumentQueryResponse nesnesi döndürür. Sınıf hakkında
+                  detaylı bilgi dokümantasyon sonundaki Sınıf Tanımlamaları
+                  bölümünde bulunabilir.
+
+
+
+
+                                              17
+                                         E-Fatura Servisi
+                                              
+
+Parametre Adı      startDate
+
+Parametre Tipi     String
+
+Açıklama
+
+Dokumanın düzenlenme tarihine göre sorgulanacak faturaların sorgu başlangıç
+tarihini tutar.
+
+
+
+Parametre Adı      endDate
+
+Parametre Tipi     String
+
+Açıklama
+
+Dokumanın düzenlenme tarihine göre sorgulanacak faturaların sorgu bitiş tarihini
+tutar.
+
+
+
+Parametre Adı      documentType
+
+Parametre Tipi     String
+
+Açıklama
+
+Dokuman türünün fatura ya da uygulama yanıtı olup olmadığını belirtir. {1,2}
+değerlerinden birini alır. [1:Fatura, 2:Uygulama yanıtı]
+
+
+
+Parametre Adı      queried
+
+Parametre Tipi     String
+
+Açıklama
+
+Gönderilen dokumanın durumunun entegratörden daha önce sorgulanıp
+sorgulanmadığını belirten değişkendir. {“YES”,”NO”,”ALL”} değerlerinden birini alır.
+
+
+
+Parametre Adı      withXML
+
+Parametre Tipi     String
+
+
+
+
+                                               18
+                                         E-Fatura Servisi
+                                              
+
+Açıklama
+
+Sorgu sonucunda döndürülecekse dokumanın XML, PDF veya HTML içeriğinin
+istenilip istenilmediğin belirtildiği parametredir. {“XML”, “PDF”, “HTML”, ”NONE”}
+değerleri alır. “NONE” herhangi bir içerik döndürmez, diğer seçeneklerde ise
+içeriğin bayt değerine sorgu sonucunda dönen DocumentQueryResponse nesnesi
+içerisindeki documents listesinde yer alan ResponseDocument nesnelerindeki
+‘content’ alanından ulaşılabilir. Bu alanın “NONE” olmadığı durumlarda dönen
+dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+Parametre Adı     minRecordId
+
+Parametre Tipi    String
+
+Açıklama
+
+Sorgu sonucunda döndürülecek dokümanların en düşük numaralı kayıt no sunu
+tutar.
+
+
+
+5. QueryOutboxDocumentWithReceivedDate
+
+Metot Adı         QueryOutboxDocumentWithReceivedDate
+
+Açıklama          Mükellefin giden kutusunda verilen tarih aralığında gönderilen
+                  fatura ve uygulama yanıtlarının durumunu sistem tarafından
+                  alınma tarihine göre sorgulamak amacıyla kullanılır.
+
+Parametreler
+
+                                 Tipi                            Adı
+
+                                String                        startDate
+
+                                String                        endDate
+
+                                String                      documentType
+
+                                String                         queried
+
+                                String                         withXML
+
+
+
+
+                                               19
+                                         E-Fatura Servisi
+                                              
+
+                                String                         minRecordId
+
+Dönüş değeri       DocumentQueryResponse nesnesi döndürür.
+
+
+
+Parametre Adı      startDate
+
+Parametre Tipi     String
+
+Açıklama
+
+Dokumanın düzenlenme tarihine göre sorgulanacak faturaların sorgu başlangıç
+tarihini tutar.
+
+
+
+Parametre Adı      endDate
+
+Parametre Tipi     String
+
+Açıklama
+
+Dokumanın düzenlenme tarihine göre sorgulanacak faturaların sorgu bitiş tarihini
+tutar.
+
+
+
+Parametre Adı      documentType
+
+Parametre Tipi     String
+
+Açıklama
+
+Dokuman türünün fatura ya da uygulama yanıtı olup olmadığını belirtir. {1,2}
+değerlerinden birini alır. [1:Fatura, 2:Uygulama yanıtı]
+
+
+
+Parametre Adı      queried
+
+Parametre Tipi     String
+
+Açıklama
+
+Gönderilen dokumanın durumunun entegratörden daha önce sorgulanıp
+sorgulanmadığını belirten değişkendir. {“YES”,”NO”,”ALL”} değerlerinden birini alır.
+
+
+
+                                               20
+                                         E-Fatura Servisi
+                                              
+
+
+
+Parametre Adı     withXML
+
+Parametre Tipi    String
+
+Açıklama
+
+Sorgu sonucunda döndürülecekse dokumanın XML, PDF veya HTML içeriğinin
+istenilip istenilmediğin belirtildiği parametredir. {“XML”, “PDF”, “HTML”, ”NONE”}
+değerleri alır. “NONE” herhangi bir içerik döndürmez, diğer seçeneklerde ise
+içeriğin bayt değerine sorgu sonucunda dönen DocumentQueryResponse nesnesi
+içerisindeki documents listesinde yer alan ResponseDocument nesnelerindeki
+‘content’ alanından ulaşılabilir. Bu alanın “NONE” olmadığı durumlarda dönen
+dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+Parametre Adı     minRecordId
+
+Parametre Tipi    String
+
+Açıklama
+
+Sorgu sonucunda döndürülecek dokümanların en düşük numaralı kayıt no sunu
+tutar.
+
+
+
+6. QueryOutboxDocumentWithLocalId
+
+Metot Adı         QueryOutboxDocumentWithLocalId
+
+Açıklama          İstemci yazılım tarafından gönderilen dokümanları, istemci
+                  sistemindeki localId bilgisi ile sorgulamak amacıyla kullanılır.
+
+Parametreler
+
+                                 Tipi                                Adı
+
+                                String                             localId
+
+Dönüş değeri      DocumentQueryResponse nesnesi döndürür.
+
+
+
+
+                                               21
+                                                E-Fatura Servisi
+                                                     
+
+Parametre Adı     localId
+
+Parametre Tipi    String
+
+Açıklama
+
+Dokumanın, gönderici sisteminde kayıtlı olduğu localId bilgisi. Sorgulamanın
+başarıyla sonuçlanması için localId bilgisinin fatura gönderimi esnasında
+InputDocument nesnesi içerisinde sağlanması gerekmektedir.
+
+
+
+7. QueryOutboxDocumentsWithGUIDList
+
+Metot Adı         QueryOutboxDocumentsWithGUIDList
+
+Açıklama          Gönderilen dokumanları 36 haneli UUID numarası ile sorgulamak
+                  için kullanılır. Sorgulanacak dokumanlara ait UUID leri liste olarak
+                  alır ve liste halinde sonucu döndürür.
+
+Parametreler
+
+                                    Tipi                                Adı
+
+                               String listesi                         guidList
+
+                                   String                          documentType
+
+Dönüş değeri      DocumentQueryResponse nesnesi döndürür. Sorgu sonucundaki
+                  dokumanlar bu sınıf içerisindeki ResponseDocument tipindeki
+                  documents alanı içerisinde bulunabilir. Sınıflar hakkında detaylı
+                  bilgi için dokuman sonundaki Sınıf Tanımlamaları bölümüne
+                  başvurunuz.
+
+
+
+Parametre Adı     guidList
+
+Parametre Tipi    String listesi
+
+Açıklama
+
+Sorgulanacak dokumanlara ait UUID listesini belirtir. 36 haneli GUID formatında
+dizeler içeren bir listedir.
+
+
+
+
+                                                      22
+                                         E-Fatura Servisi
+                                              
+
+Parametre Adı     documentType
+
+Parametre Tipi    String
+
+Açıklama
+
+Sorgulanan dokuman türünün fatura veya uygulama yanıtı olduğu bilgisini tutar. {
+1:Fatura, 2:Uygulama Yanıtı } değerlerinden birini alır.
+
+
+
+8. QueryInboxDocument
+
+Metot Adı         QueryInboxDocument
+
+Açıklama          Alınan fatura ve uygulama yanıtlarının durumunu sorgulamak
+                  amacıyla kullanılır.
+
+Parametreler
+
+                                 Tipi                                Adı
+
+                                String                          paramType
+
+                                String                           parameter
+
+                                String                            withXML
+
+Dönüş değeri      DocumentQueryResponse nesnesi döndürür. Sorgunun sonucu
+                  ve açıklaması bu sınıf içerisindeki queryState ve stateExplanation
+                  alanları ile kontrol edilebilir. Eğer sorgu sonucunda dokuman(lar)
+                  bulunursa documentCount alanı bulunan dokuman sayısını
+                  gösterir. ResponseDocument listesi tipindeki documents
+                  alanından ise her bir dokuman ile ilgili detaylı bilgiye ulaşılabilir.
+
+
+
+Parametre Adı     paramType
+
+Parametre Tipi    String
+
+Açıklama
+
+
+
+
+                                               23
+                                        E-Fatura Servisi
+                                             
+
+Dokumanın sorgulanacağı parametre tipini tutar. Fatura UUID’si, Fatura Numarası
+veya Zarf UUID’si bilgilerinden herhangi birisi ile sorgulama yapılabilir.
+{“Document_UUID”,”Document_ID”,”Envelope_UUID”} değerlerinden birini alır.
+
+
+
+Parametre Adı     parameter
+
+Parametre Tipi    String
+
+Açıklama
+
+paramType ile belirtilen parametrenin değerini tutar.
+
+
+
+Parametre Adı     withXML
+
+Parametre Tipi    String
+
+Açıklama
+
+Sorgu sonucunda döndürülecekse dokumanın XML, PDF veya HTML içeriğinin
+istenilip istenilmediğin belirtildiği parametredir. {“XML”, “PDF”, “HTML”, ”NONE”}
+değerleri alır. “NONE” herhangi bir içerik döndürmez, diğer seçeneklerde ise
+içeriğin bayt değerine sorgu sonucunda dönen DocumentQueryResponse nesnesi
+içerisindeki documents listesinde yer alan ResponseDocument nesnelerindeki
+‘content’ alanından ulaşılabilir. Bu alanın “NONE” olmadığı durumlarda dönen
+dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+
+                                              24
+                                       E-Fatura Servisi
+                                            
+
+9. QueryInboxDocumentWithDocumentDate
+
+Metot Adı        QueryInboxDocumentWithDocumentDate
+
+Açıklama         Mükellefin gelen kutusunda verilen tarih aralığında alınan fatura
+                 ve uygulama yanıtlarının durumunu fatura tarihine göre
+                 sorgulamak amacıyla kullanılır.
+
+Parametreler
+
+                               Tipi                              Adı
+
+                              String                           startDate
+
+                              String                           endDate
+
+                              String                        documentType
+
+                              String                           queried
+
+                              String                           withXML
+
+                              String                      takenFromEntegrator
+
+                              String                         minRecordId
+
+Dönüş değeri     DocumentQueryResponse nesnesi döndürür. Sınıf hakkında
+                 detaylı bilgi dokümantasyon sonundaki Sınıf Tanımlamaları
+                 bölümünde bulunabilir.
+
+
+
+Parametre Adı    startDate
+
+Parametre Tipi   String
+
+Açıklama
+
+Dokumanın düzenlenme tarihine göre sorgulanacak faturaların sorgu başlangıç
+tarihini tutar.
+
+
+
+Parametre Adı    endDate
+
+Parametre Tipi   String
+
+
+
+                                             25
+                                         E-Fatura Servisi
+                                              
+
+Açıklama
+
+Dokumanın düzenlenme tarihine göre sorgulanacak faturaların sorgu bitiş tarihini
+tutar.
+
+
+
+Parametre Adı      documentType
+
+Parametre Tipi     String
+
+Açıklama
+
+Dokuman türünün fatura ya da uygulama yanıtı olup olmadığını belirtir. {1,2}
+değerlerinden birini alır. [1:Fatura, 2:Uygulama yanıtı]
+
+
+
+Parametre Adı      queried
+
+Parametre Tipi     String
+
+Açıklama
+
+Alınan dokumanın durumunun entegratörden daha önce sorgulanıp
+sorgulanmadığını belirten değişkendir. {“YES”,”NO”,”ALL”} değerlerinden birini alır.
+
+
+
+Parametre Adı      withXML
+
+Parametre Tipi     String
+
+Açıklama
+
+Sorgu sonucunda döndürülecekse dokumanın XML, PDF veya HTML içeriğinin
+istenilip istenilmediğin belirtildiği parametredir. {“XML”, “PDF”, “HTML”, ”NONE”}
+değerleri alır. “NONE” herhangi bir içerik döndürmez, diğer seçeneklerde ise
+içeriğin bayt değerine sorgu sonucunda dönen DocumentQueryResponse nesnesi
+içerisindeki documents listesinde yer alan ResponseDocument nesnelerindeki
+‘content’ alanından ulaşılabilir. Bu alanın “NONE” olmadığı durumlarda dönen
+dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+
+                                               26
+                                        E-Fatura Servisi
+                                             
+
+Parametre Adı    takenFromEntegrator
+
+Parametre Tipi   String
+
+Açıklama
+
+Entegratörden sorgulanan dökümanın lokalde kaydedilip kaydedilmediğini tutar.
+{“YES”,”NO”,”ALL”} değerlerinden birini alır
+
+
+
+Parametre Adı    minRecordId
+
+Parametre Tipi   String
+
+Açıklama
+
+Sorgu sonucunda döndürülecek dokümanların en düşük numaralı kayıt no sunu
+tutar.
+
+
+
+10. QueryInboxDocumentWithReceivedDate
+
+Metot Adı        QueryInboxDocumentWithReceivedDate
+
+Açıklama         Mükellefin gelen kutusunda verilen tarih aralığında alınan fatura
+                 ve uygulama yanıtlarının durumunu sistem tarafından alınma
+                 tarihine göre sorgulamak amacıyla kullanılır.
+
+Parametreler
+
+                                Tipi                              Adı
+
+                               String                           startDate
+
+                               String                           endDate
+
+                               String                        documentType
+
+                               String                           queried
+
+                               String                           withXML
+
+                               String                      takenFromEntegrator
+
+
+
+
+                                              27
+                                        E-Fatura Servisi
+                                             
+
+                               String                        minRecordId
+
+Dönüş değeri      DocumentQueryResponse nesnesi döndürür.
+
+
+
+Parametre Adı     startDate
+
+Parametre Tipi    String
+
+Açıklama
+
+Dokumanın düzenlenme tarihine göre sorgulanacak faturaların sorgu başlangıç
+tarihini tutar.
+
+
+
+Parametre Adı     endDate
+
+Parametre Tipi    String
+
+Açıklama
+
+Dokumanın düzenlenme tarihine göre sorgulanacak faturaların sorgu bitiş tarihini
+tutar.
+
+
+
+Parametre Adı     documentType
+
+Parametre Tipi    String
+
+Açıklama
+
+Dokuman türünün fatura ya da uygulama yanıtı olup olmadığını belirtir. {1,2}
+değerlerinden birini alır. [1:Fatura, 2:Uygulama yanıtı]
+
+
+
+
+Parametre Adı     queried
+
+Parametre Tipi    String
+
+Açıklama
+
+
+
+
+                                              28
+                                         E-Fatura Servisi
+                                              
+
+Alınan dokumanın durumunun entegratörden daha önce sorgulanıp
+sorgulanmadığını belirten değişkendir. {“YES”,”NO”,”ALL”} değerlerinden birini alır.
+
+
+
+Parametre Adı      withXML
+
+Parametre Tipi     String
+
+Açıklama
+
+Sorgu sonucunda döndürülecekse dokumanın XML, PDF veya HTML içeriğinin
+istenilip istenilmediğin belirtildiği parametredir. {“XML”, “PDF”, “HTML”, ”NONE”}
+değerleri alır. “NONE” herhangi bir içerik döndürmez, diğer seçeneklerde ise
+içeriğin bayt değerine sorgu sonucunda dönen DocumentQueryResponse nesnesi
+içerisindeki documents listesinde yer alan ResponseDocument nesnelerindeki
+‘content’ alanından ulaşılabilir. Bu alanın “NONE” olmadığı durumlarda dönen
+dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+Parametre Adı      takenFromEntegrator
+
+Parametre Tipi     String
+
+Açıklama
+
+Entegratörden sorgulanan dökümanın lokalde kaydedilip kaydedilmediğini tutar.
+{“YES”,”NO”,”ALL”} değerlerinden birini alır
+
+
+
+Parametre Adı      minRecordId
+
+Parametre Tipi     String
+
+Açıklama
+
+Sorgu sonucunda döndürülecek dokümanların en düşük numaralı kayıt no sunu
+tutar.
+
+
+
+
+                                               29
+                                                E-Fatura Servisi
+                                                     
+
+11. QueryInboxDocumentsWithGUIDList
+
+Metot Adı         QueryInboxDocumentsWithGUIDList
+
+Açıklama          Gelen dokumanları 36 haneli UUID numarası ile sorgulamak için
+                  kullanılır. Sorgulanacak dokumanlara ait UUID leri liste olarak alır
+                  ve liste halinde sonucu döndürür.
+
+Parametreler
+
+                                    Tipi                                Adı
+
+                               String listesi                         guidList
+
+                                   String                          documentType
+
+Dönüş değeri      DocumentQueryResponse nesnesi döndürür. Sorgu sonucundaki
+                  dokumanlar bu sınıf içerisindeki ResponseDocument tipindeki
+                  documents alanı içerisinde bulunabilir. Sınıflar hakkında detaylı
+                  bilgi için dokuman sonundaki Sınıf Tanımlamaları bölümüne
+                  başvurunuz.
+
+
+
+Parametre Adı     guidList
+
+Parametre Tipi    String listesi
+
+Açıklama
+
+Sorgulanacak dokumanlara ait UUID listesini belirtir. 36 haneli GUID formatında
+dizeler içeren bir listedir.
+
+
+
+Parametre Adı     documentType
+
+Parametre Tipi    String
+
+Açıklama
+
+Sorgulanan doküman türünün fatura veya uygulama yanıtı olduğu bilgisini tutar. {
+1, 2 } değerlerinden birini alır.
+
+
+
+
+                                                      30
+                                                 E-Fatura Servisi
+                                                      
+
+12. SetTakenFromEntegrator
+
+Metot Adı          SetTakenFromEntegrator
+
+Açıklama           Verilem dokuman UUID’leri için entregratör tarafından lokale
+                   kaydedildi bilgisini işaretler.
+
+Parametreler
+
+                                    Tipi                                Adı
+
+                                String listesi                      documentUuid
+
+Dönüş değeri       DocumentQueryResponse nesnesi döndürür. İşlem sırasında
+                   herhangi bir hata oluşmamışsa “queryState” ‘0’ olarak atanır. Bir
+                   hata oluşmuşsa, “queryState” ’99’ olarak atanır. Burada dikkat
+                   edilmesi gereken durum “queryState” değerinin sorgulama
+                   sonucunu değil sorgulama durumunu gösterdiğidir. Eğer
+                   gönderilen “documentUUID” ler sistemde mevcutsa ve o uuid
+                   ‘ye ait dokumanın lokale kaydedildiği bilgisi başarıyla
+                   güncellennmişse “documentUUID”, “response” nesnesi içindeki
+                   ResponseDocument listesine eklenir. Eğer gelen UUID sistemde
+                   yoksa dönüş listesine eklenmez. Bu nedenle sorgu durumunun
+                   başarılı olmasının yanı sıra “documentCount” değerinin ve
+                   “response” nesnesindeki documentUUID listesinin kontrol
+                   edilmesinde fayda vardır.
+
+
+
+Parametre Adı      documentUuid
+
+Parametre Tipi     String listesi
+
+Açıklama
+
+Kaydedildi bilgisinin atanacağı dokümanların UUID listesini tutar.
+
+
+
+
+13. QueryAppResponseOfOutboxDocument
+
+Metot Adı          QueryAppResponseOfOutboxDocument
+
+
+
+                                                       31
+                                         E-Fatura Servisi
+                                              
+
+Açıklama           Gönderilen faturanın UUID si ile XML içeriğin istenip istenmediği
+                   bilgisini alır ve bu faturaya ait gelen uygulama yanıtları varsa
+                   onları liste halinde döner.
+
+Parametreler
+
+                                 Tipi                               Adı
+
+                                String                        documentUUID
+
+                                String                           withXML
+
+Dönüş değeri       DocumentQueryResponse nesnesi döndürür. Sorgu sonucundaki
+                   dokumanlar bu sınıf içerisindeki ResponseDocument tipindeki
+                   documents alanı içerisinde bulunabilir. Sınıflar hakkında detaylı
+                   bilgi için dokuman sonundaki Sınıf Tanımlamaları bölümüne
+                   başvurunuz.
+
+
+
+Parametre Adı      documentUUID
+
+Parametre Tipi     String
+
+Açıklama
+
+Uygulama yanıtları sorgulanacak faturanın UUID bilgisini taşır. 36 haneli GUID
+formatında bir dizedir. Zorunludur.
+
+
+
+Parametre Adı      withXML
+
+Parametre Tipi     String
+
+Açıklama
+
+Sorgu sonucunda döndürülecekse dokumanın XML, PDF veya HTML içeriğinin
+istenilip istenilmediğin belirtildiği parametredir. {“XML”, “PDF”, “HTML”, ”NONE”}
+değerleri alır. “NONE” herhangi bir içerik döndürmez, diğer seçeneklerde ise
+içeriğin bayt değerine sorgu sonucunda dönen DocumentQueryResponse nesnesi
+içerisindeki documents listesinde yer alan ResponseDocument nesnelerindeki
+‘content’ alanından ulaşılabilir. Bu alanın “NONE” olmadığı durumlarda dönen
+dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+
+                                               32
+                                          E-Fatura Servisi
+                                               
+
+14. QueryAppResponseOfInboxDocument
+
+Metot Adı          QueryAppResponseOfInboxDocument
+
+Açıklama           Gelen faturanın UUID si ile XML içeriğin istenip istenmediği bilgisini
+                   alır ve bu faturaya ait gönderilen uygulama yanıtları varsa onları
+                   liste halinde döner .
+
+Parametreler
+
+                                  Tipi                                Adı
+
+                                 String                        documentUUID
+
+                                 String                            withXML
+
+Dönüş değeri       DocumentQueryResponse nesnesi döndürür. Sorgu sonucundaki
+                   dokumanlar bu sınıf içerisindeki ResponseDocument tipindeki
+                   documents alanı içerisinde bulunabilir. Sınıflar hakkında detaylı
+                   bilgi için dokuman sonundaki Sınıf Tanımlamaları bölümüne
+                   başvurunuz.
+
+
+
+Parametre Adı      documentUUID
+
+Parametre Tipi     String
+
+Açıklama
+
+Uygulama yanıtları sorgulanacak faturanın UUID bilgisini taşır. 36 haneli GUID
+formatında bir dizedir. Zorunludur.
+
+
+
+Parametre Adı      withXML
+
+Parametre Tipi     String
+
+Açıklama
+
+Sorgu sonucunda döndürülecekse dokumanın XML, PDF veya HTML içeriğinin
+istenilip istenilmediğin belirtildiği parametredir. {“XML”, “PDF”, “HTML”, ”NONE”}
+değerleri alır. “NONE” herhangi bir içerik döndürmez, diğer seçeneklerde ise
+içeriğin bayt değerine sorgu sonucunda dönen DocumentQueryResponse nesnesi
+içerisindeki documents listesinde yer alan ResponseDocument nesnelerindeki
+
+
+
+                                                33
+                                          E-Fatura Servisi
+                                               
+
+‘content’ alanından ulaşılabilir. Bu alanın “NONE” olmadığı durumlarda dönen
+dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+15. QueryEnvelope
+
+Metot Adı          QueryEnvelope
+
+Açıklama           Herhangi bir dokümana ait Zarf UUID sini Gelir İdaresi
+                   Başkanlığı’ndan sorgulamak için kullanılır
+
+Parametreler
+
+                                   Tipi                               Adı
+
+                                 String                         envelopeUUID
+
+Dönüş değeri       DocumentQueryResponse nesnesi döndürür. Zarfın GİB’deki
+                   durumu ‘queryState’ alanında, açıklaması da ‘stateExplanation’
+                   alanında yer alır. Bir hata halinde veya zarfın GİB’de
+                   bulunamaması durumunda queryState=999 değerini alırken
+                   stateExplanation alanında GİB’in verdiği başarısız cevabı veya
+                   oluşan hatanın açıklaması yer alır.
+
+
+
+Parametre Adı      envelopeUUID
+
+Parametre Tipi     String
+
+Açıklama
+
+Sorgulanacak zarfa ait UUID bilgisini belirtir. 36 haneli GUID formatında girilmelidir.
+
+
+
+
+16. QueryArchivedOutboxDocument
+
+Metot Adı          QueryArchivedOutboxDocument
+
+Açıklama           Mevcut yıldan önceki yıllarda gönderilmiş fatura ve uygulama
+                   yanıtlarının durumunu sorgulamak amacıyla kullanılır.
+
+Parametreler
+
+
+
+                                                34
+                                         E-Fatura Servisi
+                                              
+
+                                 Tipi                                Adı
+
+                                String                          paramType
+
+                                String                           parameter
+
+                                String                            withXML
+
+                                 int                              fiscalYear
+
+Dönüş değeri      DocumentQueryResponse nesnesi döndürür. Sorgunun sonucu
+                  ve açıklaması bu sınıf içerisindeki queryState ve stateExplanation
+                  alanları ile kontrol edilebilir. Eğer sorgu sonucunda dokuman(lar)
+                  bulunursa documentCount alanı bulunan dokuman sayısını
+                  gösterir. ResponseDocument listesi tipindeki documents
+                  alanından ise her bir dokuman ile ilgili detaylı bilgiye ulaşılabilir.
+
+
+
+Parametre Adı     paramType
+
+Parametre Tipi    String
+
+Açıklama
+
+Dokumanın sorgulanacağı parametre tipini tutar. Fatura UUID’si, Fatura Numarası
+veya Zarf UUID’si bilgilerinden herhangi birisi ile sorgulama yapılabilir.
+{“Document_UUID”,”Document_ID”,”Envelope_UUID”} değerlerinden birini alır.
+
+
+
+Parametre Adı     parameter
+
+Parametre Tipi    String
+
+Açıklama
+
+paramType ile belirtilen parametrenin değerini tutar.
+
+
+
+Parametre Adı     withXML
+
+Parametre Tipi    String
+
+Açıklama
+
+
+
+
+                                               35
+                                           E-Fatura Servisi
+                                                
+
+Sorgu sonucunda döndürülecekse dokumanın XML, PDF veya HTML içeriğinin
+istenilip istenilmediğin belirtildiği parametredir. {“XML”, “PDF”, “HTML”, ”NONE”}
+değerleri alır. “NONE” herhangi bir içerik döndürmez, diğer seçeneklerde ise
+içeriğin bayt değerine sorgu sonucunda dönen DocumentQueryResponse nesnesi
+içerisindeki documents listesinde yer alan ResponseDocument nesnelerindeki
+‘content’ alanından ulaşılabilir. Bu alanın “NONE” olmadığı durumlarda dönen
+dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+Parametre Adı       fiscalYear
+
+Parametre Tipi      int
+
+Açıklama
+
+Sorgulanacak faturanın ait olduğu yılı belirtir.
+
+
+
+
+17. QueryArchivedInboxDocument
+
+Metot Adı           QueryArchivedInboxDocument
+
+Açıklama            Mevcut yıldan önceki yıllarda gelmiş fatura ve uygulama
+                    yanıtlarının durumunu sorgulamak amacıyla kullanılır.
+
+Parametreler
+
+                                   Tipi                                Adı
+
+                                  String                          paramType
+
+                                  String                           parameter
+
+                                  String                            withXML
+
+                                   int                              fiscalYear
+
+Dönüş değeri        DocumentQueryResponse nesnesi döndürür. Sorgunun sonucu
+                    ve açıklaması bu sınıf içerisindeki queryState ve stateExplanation
+                    alanları ile kontrol edilebilir. Eğer sorgu sonucunda dokuman(lar)
+                    bulunursa documentCount alanı bulunan dokuman sayısını
+                    gösterir. ResponseDocument listesi tipindeki documents
+                    alanından ise her bir dokuman ile ilgili detaylı bilgiye ulaşılabilir.
+
+
+
+                                                   36
+                                        E-Fatura Servisi
+                                             
+
+
+
+Parametre Adı     paramType
+
+Parametre Tipi    String
+
+Açıklama
+
+Dokumanın sorgulanacağı parametre tipini tutar. Fatura UUID’si, Fatura Numarası
+veya Zarf UUID’si bilgilerinden herhangi birisi ile sorgulama yapılabilir.
+{“Document_UUID”,”Document_ID”,”Envelope_UUID”} değerlerinden birini alır.
+
+
+
+Parametre Adı     parameter
+
+Parametre Tipi    String
+
+Açıklama
+
+paramType ile belirtilen parametrenin değerini tutar.
+
+
+
+Parametre Adı     withXML
+
+Parametre Tipi    String
+
+Açıklama
+
+Sorgu sonucunda döndürülecekse dokumanın XML, PDF veya HTML içeriğinin
+istenilip istenilmediğin belirtildiği parametredir. {“XML”, “PDF”, “HTML”, ”NONE”}
+değerleri alır. “NONE” herhangi bir içerik döndürmez, diğer seçeneklerde ise
+içeriğin bayt değerine sorgu sonucunda dönen DocumentQueryResponse nesnesi
+içerisindeki documents listesinde yer alan ResponseDocument nesnelerindeki
+‘content’ alanından ulaşılabilir. Bu alanın “NONE” olmadığı durumlarda dönen
+dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+Parametre Adı     fiscalYear
+
+Parametre Tipi    int
+
+Açıklama
+
+
+
+
+                                              37
+                                           E-Fatura Servisi
+                                                
+
+Sorgulanacak faturanın ait olduğu yılı belirtir.
+
+
+
+
+E-Fatura Yükleme Servisi
+Servis Adı              LoadInvoiceWS
+
+Endpoint Adresi         https://servis.kolayentegrasyon.net/InvoiceLoadingService
+
+WSDL Adresi             https://servis.kolayentegrasyon.net/InvoiceLoadingService/LoadInvoi
+                        ceWS?wsdl
+
+Açıklama                Mükellefe ait UBL xml formatındaki imzalı faturaların saklanmak üzere
+                        entegratöre iletildiği servistir. Metot açıklamaları aşağıda yer
+                        almaktadır.
+
+
+
+  1. LoadOutboxInvoice
+
+Metot Adı           LoadOutboxInvoice
+
+Açıklama            Mükellefe ait Giden Faturaların yüklendiği metottur.
+
+Parametreler
+
+                                   Tipi                              Adı
+
+                    InputDocument türünden liste         inputDocumentList
+
+Dönüş değeri        EntResponse nesnesi türünde bir liste döndürür. Gönderilen
+                    inputDocumentList parametresinin içerdiği faturalar önce şema
+                    kontrolünden geçirilir. Başarılı faturalar sisteme kaydedilir.
+                    Gönderilen her bir faturaya ait ‘document_uuid (ETTN numarası)’
+                    ve işlem sonucuna ait ‘code (kod)’, ‘explanation (açıklama)’,
+
+
+
+
+                                                   38
+                                          E-Fatura Servisi
+                                               
+
+                   işlem başarısız ise ‘cause (sebep)’ alanları EntResponse nesnesi
+                   olarak oluşturulur ve mettotan döndürülecek listeye eklenir.
+
+
+
+Parametre Adı      inputDocumentList
+
+Parametre Tipi     InputDocument nesnesi türünden liste
+
+Açıklama
+
+Her bir InputDocument nesnesi yüklenecek faturanın documentUUID’sini ve XML
+içeriğini taşır. Nesne yapısı ve özellikleri dökümanın sonundaki Sınıf Tanımlamaları
+bölümünde açıklanmıştır.
+
+
+
+
+  2. LoadInboxInvoice
+
+Metot Adı          LoadInboxInvoice
+
+Açıklama           Mükellefe ait Gelen Faturaların yüklendiği metottur.
+
+Parametreler
+
+                                  Tipi                               Adı
+
+                   InputDocument türünden liste         inputDocumentList
+
+Dönüş değeri       EntResponse nesnesi türünde bir liste döndürür. Gönderilen
+                   inputDocumentList parametresinin içerdiği faturalar önce şema
+                   kontrolünden geçirilir. Başarılı faturalar sisteme kaydedilir.
+                   Gönderilen her bir faturaya ait ‘document_uuid (ETTN numarası)’
+                   ve işlem sonucuna ait ‘code (kod)’, ‘explanation (açıklama)’,
+                   işlem başarısız ise ‘cause (sebep)’ alanları EntResponse nesnesi
+                   olarak oluşturulur ve mettotan döndürülecek listeye eklenir.
+
+
+
+Parametre Adı      inputDocumentList
+
+Parametre Tipi     InputDocument nesnesi türünden liste
+
+Açıklama
+
+
+
+                                                39
+                                          E-Fatura Servisi
+                                               
+
+Her bir InputDocument nesnesi yüklenecek faturanın documentUUID’sini ve XML
+içeriğini taşır. Nesne yapısı ve özellikleri dökümanın sonundaki Sınıf Tanımlamaları
+bölümünde açıklanmıştır.
+
+
+
+
+  3. QueryOutboxDocument
+
+Metot Adı          QueryOutboxDocument
+
+Açıklama           Yüklenen Giden Faturaların durumunu sorgulamak amacıyla
+                   kullanılır.
+
+Parametreler
+
+                                  Tipi                                Adı
+
+                                 String                          paramType
+
+                                 String                           parameter
+
+                                 String                            withXML
+
+Dönüş değeri       DocumentQueryResponse nesnesi döndürür. Sorgunun sonucu
+                   ve açıklaması bu sınıf içerisindeki queryState ve stateExplanation
+                   alanları ile kontrol edilebilir. Eğer sorgu sonucunda dokuman(lar)
+                   bulunursa documentCount alanı bulunan dokuman sayısını
+                   gösterir. ResponseDocument listesi tipindeki documents
+                   alanından ise her bir dokuman ile ilgili detaylı bilgiye ulaşılabilir.
+
+
+
+Parametre Adı      paramType
+
+Parametre Tipi     String
+
+Açıklama
+
+Dokumanın sorgulanacağı parametre tipini tutar. Fatura UUID’si, Fatura Numarası
+bilgilerinden herhangi birisi ile sorgulama yapılabilir.
+{“Document_UUID”,”Document_ID”} değerlerinden birini alır.
+
+
+
+
+                                                40
+                                          E-Fatura Servisi
+                                               
+
+Parametre Adı      parameter
+
+Parametre Tipi     String
+
+Açıklama
+
+paramType ile belirtilen parametrenin değerini tutar.
+
+
+
+Parametre Adı      withXML
+
+Parametre Tipi     String
+
+Açıklama
+
+Sorgu sonucunda dokümanın XML içeriğinin istenilip istenilmediğinin belirtildiği
+parametredir. {“YES”,”NO”} değerleri alır. Bu alanın “YES” olduğu durumlarda
+dönen dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+  4. QueryInboxDocument
+
+Metot Adı          QueryInboxDocument
+
+Açıklama           Yüklenen Gelen Faturaların durumunu sorgulamak amacıyla
+                   kullanılır.
+
+Parametreler
+
+                                  Tipi                                Adı
+
+                                 String                          paramType
+
+                                 String                           parameter
+
+                                 String                            withXML
+
+Dönüş değeri       DocumentQueryResponse nesnesi döndürür. Sorgunun sonucu
+                   ve açıklaması bu sınıf içerisindeki queryState ve stateExplanation
+                   alanları ile kontrol edilebilir. Eğer sorgu sonucunda dokuman(lar)
+                   bulunursa documentCount alanı bulunan dokuman sayısını
+                   gösterir. ResponseDocument listesi tipindeki documents
+                   alanından ise her bir dokuman ile ilgili detaylı bilgiye ulaşılabilir.
+
+
+
+
+                                                41
+                                             E-Fatura Servisi
+                                                  
+
+Parametre Adı      paramType
+
+Parametre Tipi     String
+
+Açıklama
+
+Dokumanın sorgulanacağı parametre tipini tutar. Fatura UUID’si, Fatura Numarası
+bilgilerinden herhangi birisi ile sorgulama yapılabilir.
+{“Document_UUID”,”Document_ID”} değerlerinden birini alır.
+
+
+
+Parametre Adı      parameter
+
+Parametre Tipi     String
+
+Açıklama
+
+paramType ile belirtilen parametrenin değerini tutar.
+
+
+
+Parametre Adı      withXML
+
+Parametre Tipi     String
+
+Açıklama
+
+Sorgu sonucunda dokümanın XML içeriğinin istenilip istenilmediğinin belirtildiği
+parametredir. {“YES”,”NO”} değerleri alır. Bu alanın “YES” olduğu durumlarda
+dönen dokuman sayısı performans açısından 20 ile sınırlandırılır.
+
+
+
+
+Sınıf tanımlamaları
+InputDocument Sınıfı
+
+documentUUID           Dokümanın UUID’sini taşır.
+
+xmlContent             Dokümanın UBL XML formatındaki içeriğini taşır.
+
+sourceUrn              Dökümanı gönderen kaynağın adres etiketini taşır.
+
+destinationUrn         Dökümanın gideceği hedefin adres etiketini taşır.
+
+
+
+
+                                                    42
+                                               E-Fatura Servisi
+                                                    
+
+localId               Servisi kullanan istemcinin kendi sisteminde tuttuğu ID bilgisidir.
+                      Gönderilmesi zorunlu değildir. İsteğe göre bu parametre kullanılarak
+                      sorgulama yapılabilir.
+
+documentDate          Dokümanın IssueDate değerini taşır.
+
+documentId            Dokümanın ID değerini taşır.
+
+
+
+EntResponse Sınıfı
+
+documentUUID          Dokümanın UUID’sini taşır.
+
+code                  İşlem sonucuna ait kod değerini taşır.
+
+explanation           İşlem sonucuna ait açıklama değerini taşır.
+
+cause                 İşlem sonucunda hata oluşmuşsa hatanın nedenini taşır.
+
+
+
+
+UserQueryResponse Sınıfı
+
+documentUUID          Dokümanın UUID’sini taşır.
+
+code                  İşlem sonucuna ait kod değerini taşır.
+
+explanation           İşlem sonucuna ait açıklama değerini taşır.
+
+cause                 İşlem sonucunda hata oluşmuşsa hatanın nedenini taşır.
+
+
+
+ResponseUser Sınıfı
+
+vkn_tckn              E-Fatura kullanıcısının GİB’e kayıtlı VKN veya TCKN’sini taşır.
+
+unvan_ad              E-Fatura kullanıcısının GİB’e kayıtlı Unvan veya Ad-Soyad bilgisini taşır.
+
+etiket                E-Fatura kullanıcısının GİB’e kayıtlı etiket bilgisini taşır.
+
+tip                   E-Fatura kullanıcısının GİB’e kayıtlı tip bilgisini taşır.
+
+ilkKayitZamani        E-Fatura kullanıcısının GİB’e kayıtlı ilk kayıt zamanı bilgisini taşır.
+
+etiketKayitZamanı     E-Fatura kullanıcısının GİB’e kayıtlı etiket kayıt zamanı bilgisini taşır.
+
+
+
+
+                                                      43
+                                               E-Fatura Servisi
+                                                    
+
+
+
+FlagSetter Sınıfı
+
+document_direction    Dokümanın gelen veya giden kutusunda aranmasını sağlar. {‘GIDEN’,
+                      ’GELEN’} değerlerinden birini alır.
+
+flag_name             Doküman üzerinde yapılacak işaretleme işleminin türünü tutar.
+                      {‘ARSIVLENDI’,’OKUNDU’,’MUHASEBELESTIRILDI’,’AKTARILDI’,’YAZDIRILDI’}
+                      değerlerinden birini almalıdır.
+
+flag_value            Dokümanın işaretleme değerini tutar. {0,1} değerlerinden birini almalıdır.
+
+
+document_uuid         İşaretlenecek dokümanın UUID sini taşır.
+
+
+
+TaxInfo Sınıfı
+
+taxtTypeCode          Verginin kod bilgisini taşır.
+
+taxtTypeName          Verginin adını taşır.
+
+taxAmount             Vergi tutarını taşır.
+
+
+taxPercentage         Vergi yüzdesini taşır.
+
+
+
+DocumentInfo Sınıfı
+
+documentDate          Dokümana ait tarih bilgisini taşır.
+
+documentNo            Doküman numarasını taşır.
+
+
+
+CreditAction Sınıfı
+
+purchaseDate          Kredi yüklemesine ait satın alma tarihini taşır.
+
+purchase_count        Yapılan toplam kredi yüklemesi miktarını taşır.
+
+consideredCount       Yapılan kredi toplamları arasından son kullanım tarihi geçenler
+                      düşüldüğünde kalan miktarı taşır.
+
+
+
+                                                      44
+                                             E-Fatura Servisi
+                                                  
+
+credit_unit            Kredi yüklemesinin türünü belirtir. {1:Kontör, 2: MB}
+
+credit_pool_id         Mükellefin içinde bulunduğu kredi havuzunun tekil tanımlayıcısıdır.
+
+buyer_VKN_TCKN         Kredi yüklemesini yapan müşterinin VKN/TCKN bilgisidir.
+
+action_type            CreditActionTypes enum türüne ait işlem türüdür.
+
+
+
+DocumentQueryResponse Sınıfı
+
+queryState             Sorgu sonucunda hata oluşup oluşmadığına dair kod bilgisini tutar.
+
+stateExplanation       Sorgu sonucunda hata oluşup oluşmadığına dair açıklama bilgisini tutar.
+
+maxRecordIdinList      Dokuman listesi içerisindeki en yüksek kayıt no’lu dokumanın kayıt no’sunu tutar.
+
+documentsCount         Sorgu sonucunda dönen dokuman sayısını sayısını taşır.
+
+documents              Sorgu sonucunda dönen dokümanları ResponseDocument listesi içinde tutar.
+
+
+
+ResponseDocument Sınıfı
+
+document_uuid                         Dokümanın UUID’sini taşır.
+
+document_id                           Fatura için fatura numarası, uygulama yanıtı için ise UUID formatında
+                                      eşsiz id değerini taşır.
+
+envelope_uuid                         Dokumanların zarflanmasının akabinde oluşturulan zarfın UUID’sini
+                                      taşır.
+
+document_profile                      Dokumana ait senaryo türü bilgisini taşır. Örn: TEMELFATURA,
+                                      TICARIFATURA vb.
+
+system_creation_time                  Dokumanın entegratör tarafından alındığı zamanı tutar.
+
+document_issue_date                   Dokumanın düzenlenme tarihini tutar.
+
+source_id                             Dokumanı gönderenin VKN ya da TCKN’sini taşır.
+
+source_urn                            Dokumanı gönderenin VKN ya da TCKN’sini taşır.
+
+source_title                          Dokumanı gönderenin Unvan bilgisini taşır.
+
+destination_id                        Dokuman alıcısının VKN ya da TCKN’sini taşır.
+
+
+
+                                                   45
+                                   E-Fatura Servisi
+                                        
+
+destination_urn             Dokuman alıcısının adres etiketini taşır.
+
+state_code                  Dokumanın durumunun kod değerini taşır.
+
+state_explanation           Dokumanın durumunun açıklama değerini taşır.
+
+content_type                Dokumanın içeriğinin türünü taşır.
+
+document_content            Dokuman içeriğini byte dizisi olarak taşır.
+
+currency_code               Dokumanın tutarının para birimi değerini tutar. (Örn: TRY)
+
+cause                       Dokümanın işlenmesi sırasında bir hata oluşmuşsa, hata nedeni bu
+                            alanla geri dönülür.
+
+invoice_total               Dokumanın toplam tutarını taşır.
+
+emailSent                   -Kullanılmıyor-
+
+emailSentDate               -Kullanılmıyor-
+
+cancelled                   -Kullanılmıyor-
+
+cancel_date                 -Kullanılmıyor-
+
+reference_document_uuid     Mükellefe gelen uygulama yanıtlarında cevap verilen dokumana ait
+                            UUID bilgisini taşır.
+
+response_document_uuid      Mükellef tarafından gönderilen uygulama yanıtlarında cevap verilen
+                            dokumana ait UUID bilgisini taşır.
+
+response_code               Gönderilen uygulama yanıtlarının RED ya da KABUL bilgisini tutar.
+                            {KABUL, RED} değerlerinden birini alır.
+
+response_validation_state   Gönderilen uygulama yanıtlarının GİB yönergelerine göre geçerlilik
+                            durumunu taşır.
+
+response_received_date      Gönderilen veya gelen faturaya cevap alınmışsa/verilmişse, bu
+                            cevabın alındıpı/gönderildiği tarihi taşır.
+
+gtb_reference_no            Sorgulanan ihracat faturalarına ait 23 haneli GTB Referans
+                            Numarasını taşır.
+
+gtb_gcb_tescil_no           Sorgulanan ihracat faturasına ait GÇB Tescil Numarasını taşır.
+
+gtb_fiili_ihracat_tarihi    Sorgulanan ihracat faturasına ait Fiili İhracat Tarihini taşır.
+
+
+
+
+                                          46
+                                  E-Fatura Servisi
+                                       
+
+document_type_code         Faturanın türünü ( SATIS, IADE, TEVKIFAT, OZELMATRAH, ISTISNA,
+                           IHRACKAYITLI, SGK ) taşır.
+
+notes                      Doküman içeriğindeki notları String listesi halinde taşır.
+
+despatchInfo               Doküman içeriğindeki İrsaliye Bilgilerini taşır.
+
+orderInfo                  Doküman içeriğindeki Sipariş Bilgilerini taşır.
+
+taxInfo                    Doküman içeriğindeki Vergi Bilgilerini taşır.
+
+taxInclusiveAmount         Faturaya ait vergiler dahil toplam fiyatı taşır.
+
+taxExlusiveAmount          Faturaya ait vergisiz toplam fiyatı taşır.
+
+allowanceTotalAmount       Faturaya ait vergisiz toplam fiyatı taşır.
+
+taxAmount0015              Faturaya ait toplam KDV bilgisini taşır.
+
+lineExtensionAmount        Faturaya ait ürün/hizmet kalemleri toplam fiyatını taşır.
+
+suplierPersonName          Göndericinin Özel Kişi olması halinde Kişi Adı bilgisini taşır.
+
+supplierPersonMiddleName   Göndericinin Özel Kişi olması halinde Kişi Orta Adı bilgisini taşır.
+
+supplierPersonFamilyName   Göndericinin Özel Kişi olması halinde Kişi Soyadı bilgisini taşır.
+
+customerPersonName         Alıcının Özel Kişi olması halinde Kişi Adı bilgisini taşır.
+
+customerPersonMiddleName   Alıcının Özel Kişi olması halinde Kişi Orta Adı bilgisini taşır.
+
+customerPersonFamilyName   Alıcının Özel Kişi olması halinde Kişi Soyadı bilgisini taşır.
+
+is_read                    Dokümana ait Okundu bilgisidir. {0,1} değerlerinden birini alır.
+
+is_archieved               Dokümana ait Arşivlendi bilgisidir. {0,1} değerlerinden birini alır.
+
+is_accounted               Dokümana ait Muhasebeleştirildi bilgisidir. {0,1} değerlerinden birini
+                           alır.
+
+is_transferred             Dokümana ait Aktarıldı bilgisidir. {0,1} değerlerinden birini alır.
+
+is_printed                 Dokümana ait Yazdırıldı bilgisidir. {0,1} değerlerinden birini alır.
+
+local_id                   İstemci sisteminde dokümana karşılık gelen kayıt numarası bilgisidir.
+                           Bu alan belge gönderim esnasında belirlenir. Gönderilmesi zorunlu
+                           değildir.
+
+
+
+
+                                         47
+                                                 E-Fatura Servisi
+                                                      
+
+sendingType                               -Kullanılmıyor-
+
+buyer_customer_party_name                 -Kullanılmıyor-
+
+buyer_customer_person_name                -Kullanılmıyor-
+
+buyer_customer_person_familyname -Kullanılmıyor-
+
+
+
+CreditActionTypes Enum Sınıfı
+
+BASLAMA                   Yeni kayıt yapılması durumunda eklenen kredi türüdür.
+
+SATINALMA                 Satın alma durumunda eklenen kredi türüdür.
+
+DEVIR_GIRIS               Kredi Devri yapılan tarafın devredilen tarafta olması durumunda kullanılan kredi
+                          türüdür.
+
+HEDIYE                    Hediye edilen krediler için kullanılan kredi türüdür.
+
+DEVIR_CIKIS               Kredi Devri yapılan tarafın devreden tarafta olması durumunda kullanılan kredi
+                          türüdür.
+
+TRANSFER                  Farklı bir sistemden transfer edilen krediler için kullanılan kredi türüdür.
+
+
+
+
+Hata Kodları ve Açıklamaları
+
+EntResponse, DocumentQueryResponse ve UserQueryResponse Sınıfları için Hata kodları
+
+Kod      Mesaj                      Açıklama                                      Örnek
+
+0        İşlem başarılı             İşlemin tamamlandığını belirtir.              -
+
+99       İşlem başarısız            İşlemin gerçekleştirilmesi sırasında          Fatura gönderimi başarısız,
+                                    oluşan hatalar için döndürülür.               kullanıcının etiket üzerinde
+                                                                                  yetkisinin bulunmaması…
+
+500      Yetkisiz kullanıcı         Servis metotlarının yetkisiz kişiler          Entegratör giriş bilgileri
+                                    tarafından çağırılmaya                        haricindeki bilgilerle servise
+                                    çalışıldığında oluşur.                        erişilmeye çalışılması
+
+
+
+
+                                                        48
+                                             E-Fatura Servisi
+                                                  
+
+510       Yetki kontrolü         Yetki kontrolü esnasında problem        -
+          başarısız              oluşması sonucu oluşur.
+
+999       Tanımlanmamış          Yukarıda tanımlanmış hatalar            -
+          hata                   haricinde bir hata oluştuğunda
+                                 döndürülür.
+
+
+
+CreditInfo Sınıfı için Hata kodları
+
+Kod       Mesaj                  Açıklama                                Örnek
+(code)    (explanation)
+
+0         İşlem başarılı         İşlemin tamamlandığını belirtir.        -
+
+99        İşlem başarısız        İşlemin gerçekleştirilmesi sırasında    Verilen VKN/TCKN’ye sahip
+                                 oluşan hatalar için döndürülür.         müşterinin bulunamaması
+
+
+
+
+Http Başlığı ekleme ve yetkilendirme örneği
+Web Servis’teki metotları çağırabilmek için sistemde kayıtlı bir kullanıcı olunması gerekmektedir.
+Bu kontrol metoda gönderilen bir HTTP Başlığı ile yapılmaktadır. Bu başlık içerisinde kullanıcı adı
+ve şifre bilgileri yer almaktadır. İşlem adımları aşağıda anlatıldığı gibidir.
+
+Önce bir InvoiceWSClient nesnesi oluşturulur. Bu nesne üzerinden Web Servis’in metotlarına
+erişilebilir. Metotlara erişebilmek için eklenecek HTTP başlığı ise aşağıda gösterilen şekilde eklenir.
+
+       prop.Headers.Add(başlık_adı , başlık_değeri);
+
+satırı eklenen başlığın adı ve değerini tutar.
+
+Aşağıdaki “Username” değeri gönderilen başlığın adı, username bu başlığın değeridir. Aynı şekilde
+“Password” değeri başlık adı, password bu başlığın değeridir. Kod içerisinde bu alanlara ait
+değişkenlerin oluşturulduğuna emin olunuz. Bu alanların gönderilmemesi veya yanlış değer ile
+gönderilmesi sonucu 500 kodlu Yetkilendirme hatası ile karşılaşılır.
+
+
+
+
+                                                   49
+                                          E-Fatura Servisi
+                                               
+
+       InvoiceWSClient faturaServisi = new InvoiceWSClient();
+
+      static void Main(string args[])
+      {
+             using (var scope = new OperationContextScope(faturaServisi.InnerChannel))
+             {
+               var prop = new HttpRequestMessageProperty();
+               prop.Headers.Add("Username", username); //test kullanıcı
+               prop.Headers.Add("Password", password); //test şifresi
+
+                OperationContext context = OperationContext.Current;
+                context.OutgoingMessageProperties[HttpRequestMessageProperty.Name] = prop;
+
+
+                           // Web Servis metotları burada çağırılmalıdır.
+                    // Fatura gönderme, Uygulama yanıtı gönderme vb.
+
+                                                     .
+                                                     .
+
+                                          faturaServisi.sendInvoice(document);
+
+                                   faturaServisi.sendApplicationResponse(document);
+
+               }
+
+      }
+
+
+
+QueryInvoiceWS App.Config dosyası konfigürasyonu
+
+QueryInvoiceWS Web Servisi için GetUserGBList ve GetUserPKList metotları kullanılmadan önce
+bir konfigürasyon adımı gerekmektedir. Bunun amacı, bu iki metot istemciye .zip dosyası
+göndereceği için mevcut iletişim protokolünde dosya aktarmada izin verilen maksimum boyutu
+artırmaktır. Aksi halde ProtocolException, Communication Exception gibi hatalarla karş ılaşılır.
+
+
+
+
+                                                50
+                                           E-Fatura Servisi
+                                                
+
+
+
+
+Yapılması gereken, QueryInvoiceWS için eklenen Servis Referansı (Service Reference) ’nin
+bulunduğu <binding> …. </binding> etiketleri aralığındaki <httpTransport /> etiketinin yukarıda
+gösterilenle değiştirilip kaydedilmesidir. Bu adımdan sonra ilgili metotları çalıştırdığınızda .zip
+dosyasının belirttiğiniz yola indiğini görebilirsiniz.
+
+
+
+
+                                                 51
+

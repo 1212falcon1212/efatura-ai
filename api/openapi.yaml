@@ -1,0 +1,541 @@
+openapi: 3.1.0
+info:
+  title: efatura.ai Public API
+  version: v1
+  description: |
+    efatura.ai REST API — müşteri uygulamaları için fatura oluşturma, kontör yönetimi, webhook’lar ve entegrasyon uçları.
+    
+    - Kimlik doğrulama: `X-Api-Key` başlığı ile yapılır. Organizasyon seviyesinde API anahtarları üretilir.
+    - Idempotency: Yazma taleplerinde `X-Idempotency-Key` gereklidir.
+    - Versiyonlama: URL üzerinden `/v1`.
+    - Sayfalama: Cursor tabanlı; `page[after]`, `page[limit]` parametreleri ve `X-Next-Cursor` başlığı.
+servers:
+  - url: https://api.efatura.ai
+    description: Production
+  - url: https://sandbox.api.efatura.ai
+    description: Sandbox
+security:
+  - ApiKeyAuth: []
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+  parameters:
+    IdempotencyKey:
+      name: X-Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        maxLength: 255
+      description: Benzersiz anahtar; tekrar gönderimler için aynı sonucu garanti eder.
+    AfterCursor:
+      name: page[after]
+      in: query
+      required: false
+      schema:
+        type: string
+    Limit:
+      name: page[limit]
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: invalid_request
+        message:
+          type: string
+          example: Missing required field: customer.vkn
+        requestId:
+          type: string
+          example: req_01HV2H4Y7Z3S9M7T6K3V5G
+        details:
+          type: object
+          additionalProperties: true
+    Money:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: number
+          format: double
+          example: 199.9
+        currency:
+          type: string
+          example: TRY
+    InvoiceItem:
+      type: object
+      required: [name, quantity, unitPrice]
+      properties:
+        name: { type: string, example: Ürün A }
+        sku: { type: string, nullable: true }
+        quantity: { type: number, format: double, example: 2 }
+        unit: { type: string, example: Adet }
+        vatRate: { type: number, format: double, example: 20 }
+        unitPrice:
+          $ref: '#/components/schemas/Money'
+        total:
+          $ref: '#/components/schemas/Money'
+    Customer:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, example: ACME A.Ş. }
+        vkn: { type: string, nullable: true, example: "1234567890" }
+        tckn: { type: string, nullable: true }
+        email: { type: string, format: email, nullable: true }
+        address: { type: string, nullable: true }
+    Invoice:
+      type: object
+      required: [id, status, totals]
+      properties:
+        id: { type: string, example: inv_01HV2J6B9Q }
+        externalId: { type: string, nullable: true }
+        status: { type: string, example: queued, enum: [queued, processing, sent, failed, canceled] }
+        type: { type: string, enum: [e_fatura, e_arsiv], example: e_fatura }
+        issueDate: { type: string, format: date }
+        customer:
+          $ref: '#/components/schemas/Customer'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceItem'
+        totals:
+          type: object
+          properties:
+            subtotal: { $ref: '#/components/schemas/Money' }
+            vatTotal: { $ref: '#/components/schemas/Money' }
+            grandTotal: { $ref: '#/components/schemas/Money' }
+        providerRef:
+          type: string
+          nullable: true
+          description: Entegrasyon sağlayıcısının referansı (varsa)
+    Voucher:
+      type: object
+      required: [id, status, type]
+      properties:
+        id: { type: string, example: vch_01J0ABCD123 }
+        externalId: { type: string, nullable: true }
+        status: { type: string, enum: [queued, processing, sent, failed, canceled], example: queued }
+        type: { type: string, enum: [SMM, MM], example: SMM }
+        issueDate: { type: string, format: date, nullable: true }
+        ettn: { type: string, nullable: true }
+        providerRef: { type: string, nullable: true }
+    VoucherCreateRequest:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, enum: [SMM, MM] }
+        xml: { type: string, description: UBL XML içeriği, nullable: true }
+        ettn: { type: string, nullable: true }
+        destinationEmail: { type: string, format: email, nullable: true }
+    Despatch:
+      type: object
+      required: [id, status, mode]
+      properties:
+        id: { type: string, example: dsp_01J0XYZ987 }
+        externalId: { type: string, nullable: true }
+        status: { type: string, enum: [queued, processing, sent, failed, canceled], example: queued }
+        mode: { type: string, enum: [despatch, receipt], example: despatch }
+        issueDate: { type: string, format: date, nullable: true }
+        ettn: { type: string, nullable: true }
+        providerRef: { type: string, nullable: true }
+    DespatchCreateRequest:
+      type: object
+      required: [mode]
+      properties:
+        mode: { type: string, enum: [despatch, receipt] }
+        xml: { type: string, description: UBL XML içeriği, nullable: true }
+        ettn: { type: string, nullable: true }
+    InvoiceCreateRequest:
+      type: object
+      required: [customer, items]
+      properties:
+        externalId: { type: string, nullable: true }
+        type: { type: string, enum: [e_fatura, e_arsiv], default: e_fatura }
+        issueDate: { type: string, format: date, nullable: true }
+        customer:
+          $ref: '#/components/schemas/Customer'
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/InvoiceItem'
+        metadata:
+          type: object
+          additionalProperties: true
+    CreditWallet:
+      type: object
+      required: [balance]
+      properties:
+        balance: { $ref: '#/components/schemas/Money' }
+        lowBalanceThreshold: { $ref: '#/components/schemas/Money' }
+    CreditTransaction:
+      type: object
+      required: [id, type, amount]
+      properties:
+        id: { type: string, example: crx_01HV2K2YF1 }
+        type: { type: string, enum: [top_up, debit, refund, adjustment] }
+        amount: { $ref: '#/components/schemas/Money' }
+        createdAt: { type: string, format: date-time }
+    WebhookSubscription:
+      type: object
+      required: [id, url, secret]
+      properties:
+        id: { type: string }
+        url: { type: string, format: uri }
+        secret: { type: string }
+        events:
+          type: array
+          items:
+            type: string
+            example: invoice.sent
+    WebhookDelivery:
+      type: object
+      properties:
+        id: { type: string }
+        event: { type: string }
+        status: { type: string, enum: [pending, delivered, failed] }
+        attemptCount: { type: integer }
+        lastAttemptAt: { type: string, format: date-time, nullable: true }
+paths:
+  /v1/organizations/current:
+    get:
+      summary: Mevcut API anahtarına bağlı organizasyonu getir
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  name: { type: string }
+                  createdAt: { type: string, format: date-time }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/invoices:
+    get:
+      summary: Faturaları listele
+      parameters:
+        - $ref: '#/components/parameters/AfterCursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Next-Cursor:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+    post:
+      summary: Fatura oluştur (kuyruğa al)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceCreateRequest'
+      responses:
+        '202':
+          description: Accepted — fatura kuyruklandı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/invoices/{id}:
+    get:
+      summary: Fatura detayını getir
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/invoices/{id}/cancel:
+    post:
+      summary: Faturayı iptal et
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+  /v1/invoices/{id}/retry:
+    post:
+      summary: Başarısız faturayı yeniden dene
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+  /v1/credits/wallet:
+    get:
+      summary: Kontör cüzdanını getir
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditWallet'
+  /v1/credits/transactions:
+    get:
+      summary: Kontör hareketleri
+      parameters:
+        - $ref: '#/components/parameters/AfterCursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CreditTransaction'
+  /v1/webhooks/subscriptions:
+    post:
+      summary: Webhook aboneliği oluştur
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url, events]
+              properties:
+                url: { type: string, format: uri }
+                events:
+                  type: array
+                  items: { type: string }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookSubscription'
+    get:
+      summary: Webhook aboneliklerini listele
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebhookSubscription'
+  /v1/webhooks/deliveries/{id}/replay:
+    post:
+      summary: Başarısız bir webhook teslimatını yeniden gönder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookDelivery'
+  /v1/vouchers:
+    get:
+      summary: E-Makbuzları (SMM/MM) listele
+      parameters:
+        - $ref: '#/components/parameters/AfterCursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Next-Cursor:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Voucher'
+    post:
+      summary: E-Makbuz oluştur (kuyruğa al)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoucherCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Voucher'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/vouchers/{id}:
+    get:
+      summary: E-Makbuz detayını getir
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Voucher'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/despatches:
+    get:
+      summary: E-İrsaliyeleri listele
+      parameters:
+        - $ref: '#/components/parameters/AfterCursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Next-Cursor:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Despatch'
+    post:
+      summary: E-İrsaliye oluştur (kuyruğa al)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DespatchCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Despatch'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/despatches/{id}:
+    get:
+      summary: E-İrsaliye detayını getir
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Despatch'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

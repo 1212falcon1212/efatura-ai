@@ -1,0 +1,88 @@
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { api } from '../lib/api'
+import { VoucherPreview, openVoucherPrintWindow } from '../components/preview/VoucherPreview'
+import { useConfirm } from '../components/ui/ConfirmProvider'
+import { useToast } from '../components/ui/ToastProvider'
+
+export default function VoucherDetailPage() {
+	const { id } = useParams()
+	const navigate = useNavigate()
+	const [data, setData] = useState<any>(null)
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState('')
+	const [busy, setBusy] = useState(false)
+	const confirm = useConfirm()
+	const toast = useToast()
+
+	useEffect(() => {
+		let mounted = true
+		;(async () => {
+			try {
+				setLoading(true)
+				const res = await api.get(`/vouchers/${id}`)
+				if (mounted) setData(res.data)
+			} catch (e: any) {
+				if (mounted) setError(e?.response?.data?.message || 'Yükleme hatası')
+			} finally {
+				if (mounted) setLoading(false)
+			}
+		})()
+		return () => { mounted = false }
+	}, [id])
+
+	async function cancel() {
+		if (!id) return
+		const ok = await confirm({ title: 'İptal', description: `Makbuz #${id} iptal edilsin mi?`, variant: 'danger', confirmText: 'İptal Et' })
+		if (!ok) return
+		setBusy(true)
+		try {
+			const res = await api.post(`/vouchers/${id}/cancel`)
+			setData(res.data)
+			toast.show({ type: 'success', title: 'İptal edildi' })
+		} catch { toast.show({ type: 'error', title: 'İşlem başarısız' }) } finally { setBusy(false) }
+	}
+	async function retry() {
+		if (!id) return
+		const ok = await confirm({ title: 'Yeniden dene', description: `Makbuz #${id} yeniden denensin mi?` })
+		if (!ok) return
+		setBusy(true)
+		try {
+			const res = await api.post(`/vouchers/${id}/retry`)
+			setData(res.data)
+			toast.show({ type: 'success', title: 'Yeniden denendi' })
+		} catch { toast.show({ type: 'error', title: 'İşlem başarısız' }) } finally { setBusy(false) }
+	}
+
+	return (
+		<div style={{ padding: 24 }}>
+			<button onClick={() => navigate(-1)}>Geri</button>
+			<h2>E‑Makbuz Detayı</h2>
+			{loading && <div>Yükleniyor…</div>}
+			{error && <div style={{ color: 'crimson' }}>{error}</div>}
+			{!loading && data && (
+				<div style={{ display: 'grid', gap: 12 }}>
+					<div><strong>ID:</strong> {data.id}</div>
+					<div><strong>Durum:</strong> {data.status}</div>
+					<div><strong>Tip:</strong> {data.type}</div>
+					<div><strong>ETTN:</strong> {data.ettn ?? '-'}</div>
+					<div style={{ display: 'flex', gap: 8 }}>
+						{data.status !== 'canceled' && <button onClick={cancel} disabled={busy}>İptal Et</button>}
+						{data.status === 'failed' && <button onClick={retry} disabled={busy}>Yeniden Dene</button>}
+						<button onClick={() => openVoucherPrintWindow(data)}>Yazdır</button>
+					</div>
+					<div>
+						<h3>Önizleme</h3>
+						<VoucherPreview data={data} />
+					</div>
+					{data.xml && (
+						<div>
+							<h3>XML</h3>
+							<pre style={{ whiteSpace: 'pre-wrap', background: '#f8f8f8', padding: 12 }}>{data.xml}</pre>
+						</div>
+					)}
+				</div>
+			)}
+		</div>
+	)
+}
