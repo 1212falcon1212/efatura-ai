@@ -1,8 +1,7 @@
 name: Deploy Staging
 
 on:
-  push:
-    branches: [ staging ]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -43,7 +42,7 @@ jobs:
             ghcr.io/${{ github.repository }}-frontend:staging
 
       - name: Deploy over SSH (optional)
-        if: ${{ secrets.STAGING_HOST != '' && secrets.STAGING_USER != '' && secrets.STAGING_KEY != '' }}
+        if: ${{ (secrets.STAGING_HOST || '') != '' && (secrets.STAGING_USER || '') != '' && (secrets.STAGING_KEY || '') != '' }}
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.STAGING_HOST }}
