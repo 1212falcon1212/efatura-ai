@@ -33,7 +33,7 @@ jobs:
           APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
           APP_ENV: testing
           DB_CONNECTION: sqlite
-          DB_DATABASE: :memory:
+          DB_DATABASE: ":memory:"
         run: |
           cd backend/efatura-backend
           php artisan test --testsuite=Feature --stop-on-failure

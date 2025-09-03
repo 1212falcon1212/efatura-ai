@@ -43,13 +43,13 @@ jobs:
             ghcr.io/${{ github.repository }}-frontend:staging
 
       - name: Deploy over SSH (optional)
-        if: ${{ secrets.STAGING_HOST && secrets.STAGING_USER && secrets.STAGING_KEY }}
+        if: ${{ secrets.STAGING_HOST != '' && secrets.STAGING_USER != '' && secrets.STAGING_KEY != '' }}
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
           key: ${{ secrets.STAGING_KEY }}
-          port: ${{ secrets.STAGING_PORT || 22 }}
+          port: ${{ secrets.STAGING_PORT }}
           script: |
             docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
             docker pull ghcr.io/${{ github.repository }}-backend:staging
