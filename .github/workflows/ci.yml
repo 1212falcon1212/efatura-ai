@@ -15,10 +15,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install generator
-        run: npm ci
-      - name: Generate SDKs
-        run: npm run sdk:gen
+      # Repo kökünde package-lock.json olmadığından npm ci çalıştırmıyoruz
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
